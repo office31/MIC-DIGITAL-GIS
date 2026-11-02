@@ -8,7 +8,7 @@ namespace MICGeoVisionPro.Desktop
 {
     public partial class MainWindow : Window
     {
-        private ProjectViewModel _viewModel;
+        private readonly ProjectViewModel _viewModel;
 
         public MainWindow()
         {
@@ -101,3 +101,4 @@ namespace MICGeoVisionPro.Desktop
         }
     }
 }
+
