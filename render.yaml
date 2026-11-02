@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: micgis-api
+    env: node
+    plan: free
+    rootDir: api
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+  - type: web
+    name: micgis-website
+    env: static
+    rootDir: website
+    buildCommand: ""
+    staticPublishPath: .
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

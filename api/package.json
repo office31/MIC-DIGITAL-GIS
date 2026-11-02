@@ -1,0 +1,13 @@
+{
+  "name": "micgis-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "API for MIC GeoVision Pro / MIC GIS",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://micgis.onrender.com/sitemap.xml
