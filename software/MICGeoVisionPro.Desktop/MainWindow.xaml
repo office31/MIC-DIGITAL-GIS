@@ -25,7 +25,8 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Content="New Project" Width="110" Margin="0,0,8,0" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
+                    <Button x:Name="AddBoreholeButton" Content="New Borehole" Width="120" Margin="0,0,8,0" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
+                    <Button x:Name="SaveProjectButton" Content="Save" Width="90" Height="30" Margin="0,0,8,0" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
                     <Button Content="Import" Width="90" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
                     <Button Content="Export" Width="90" Height="30" Margin="8,0,0,0" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
                 </StackPanel>
@@ -42,15 +43,11 @@
             <Border Background="#0d1b2a" BorderBrush="#2c4b65" BorderThickness="0,0,1,0">
                 <StackPanel Margin="12,12,10,12">
                     <TextBlock Text="PROJECT" FontSize="11" Foreground="#a8c1d9" FontWeight="Bold" Margin="0,0,0,12"/>
-                    <TextBox Text="{Binding ProjectName}" Height="30" Margin="0,0,0,18" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
+                    <TextBox x:Name="ProjectNameBox" Text="{Binding ProjectName}" Height="30" Margin="0,0,0,18" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
 
                     <TextBlock Text="BOREHOLES" FontSize="11" Foreground="#a8c1d9" FontWeight="Bold" Margin="0,0,0,10"/>
                     <TextBlock Text="{Binding BoreholesCount, StringFormat='Total: {0}'}" Margin="0,0,0,10" Foreground="#edf7ff"/>
-                    <ListBox Height="140" Background="#0e1a29" BorderBrush="#2c4b65" Foreground="#edf7ff">
-                        <ListBoxItem Content="B-01" IsSelected="True"/>
-                        <ListBoxItem Content="B-02"/>
-                        <ListBoxItem Content="B-03"/>
-                    </ListBox>
+                    <ListBox x:Name="BoreholeList" Height="140" Background="#0e1a29" BorderBrush="#2c4b65" Foreground="#edf7ff" DisplayMemberPath="Name"/>
 
                     <TextBlock Text="LOGS" FontSize="11" Foreground="#a8c1d9" FontWeight="Bold" Margin="18,18,0,10"/>
                     <TextBlock Text="{Binding LogsCount, StringFormat='Logs: {0}'}" Margin="0,0,0,10" Foreground="#edf7ff"/>
@@ -122,7 +119,6 @@
                                 <Rectangle Width="560" Height="32" Canvas.Left="40" Canvas.Top="160" Fill="#5eb4d8" Opacity="0.7"/>
                                 <Rectangle Width="560" Height="25" Canvas.Left="40" Canvas.Top="235" Fill="#7cc8b1" Opacity="0.7"/>
                                 <Rectangle Width="560" Height="80" Canvas.Left="40" Canvas.Top="295" Fill="#c4a57d" Opacity="0.7"/>
-
                                 <Line X1="40" Y1="30" X2="40" Y2="390" Stroke="#dfeaf5" StrokeThickness="2"/>
                                 <Line X1="40" Y1="390" X2="600" Y2="390" Stroke="#dfeaf5" StrokeThickness="2"/>
                             </Canvas>
@@ -136,20 +132,10 @@
                     <TextBlock Text="PROPERTIES" FontSize="11" Foreground="#a8c1d9" FontWeight="Bold" Margin="0,0,0,12"/>
 
                     <TextBlock Text="Borehole" Foreground="#edf7ff" Margin="0,8,0,4" FontWeight="Bold"/>
-                    <TextBox Text="B-01" Height="28" Background="#112230" BorderBrush="#2c4b65" Foreground="#edf7ff"/>
-
-                    <TextBlock Text="Coordinates" Foreground="#edf7ff" Margin="0,16,0,4" FontWeight="Bold"/>
-                    <Grid Margin="0,6,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBox Grid.Column="0" Text="500.00" Height="28" Margin="0,0,6,0" Background="#112230" BorderBrush="#2c4b65" Foreground="#edf7ff"/>
-                        <TextBox Grid.Column="1" Text="600.00" Height="28" Margin="6,0,0,0" Background="#112230" BorderBrush="#2c4b65" Foreground="#edf7ff"/>
-                    </Grid>
+                    <TextBlock Text="{Binding SelectedBoreholeName}" FontSize="18" Foreground="#edf7ff" Margin="0,0,0,8"/>
 
                     <TextBlock Text="Total Depth" Foreground="#edf7ff" Margin="0,16,0,4" FontWeight="Bold"/>
-                    <TextBox Text="76.00" Height="28" Background="#112230" BorderBrush="#2c4b65" Foreground="#edf7ff"/>
+                    <TextBlock Text="{Binding SelectedBoreholeTotalDepth}" Foreground="#edf7ff"/>
 
                     <TextBlock Text="Log Type" Foreground="#edf7ff" Margin="0,16,0,4" FontWeight="Bold"/>
                     <ComboBox Height="30" SelectedIndex="0" Background="#112230" BorderBrush="#2c4b65" Foreground="#edf7ff">
@@ -164,7 +150,7 @@
         </Grid>
 
         <Border Grid.Row="2" Background="#0b1724" BorderBrush="#2c4b65" BorderThickness="0,1,0,0">
-            <TextBlock Text=" Ready  |  Project loaded  |  3 logs available  |  Demo mode" Foreground="#a8c1d9" VerticalAlignment="Center" Margin="14,0,0,0"/>
+            <TextBlock Text=" Ready  |  Project loaded  |  SQLite active  |  Demo mode" Foreground="#a8c1d9" VerticalAlignment="Center" Margin="14,0,0,0"/>
         </Border>
     </Grid>
 </Window>
