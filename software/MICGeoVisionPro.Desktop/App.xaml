@@ -1,0 +1,16 @@
+<Application x:Class="MICGeoVisionPro.Desktop.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <SolidColorBrush x:Key="PrimaryBrush" Color="#0ea5e9"/>
+            <SolidColorBrush x:Key="DarkBrush" Color="#091821"/>
+            <SolidColorBrush x:Key="PanelBrush" Color="#112230"/>
+            <SolidColorBrush x:Key="PanelAltBrush" Color="#183146"/>
+            <SolidColorBrush x:Key="TextBrush" Color="#edf7ff"/>
+            <SolidColorBrush x:Key="MutedBrush" Color="#a8c1d9"/>
+            <SolidColorBrush x:Key="BorderBrush" Color="#2c4b65"/>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
