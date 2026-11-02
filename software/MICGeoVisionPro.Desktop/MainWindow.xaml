@@ -28,7 +28,7 @@
                     <Button x:Name="AddBoreholeButton" Content="New Borehole" Width="120" Margin="0,0,8,0" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
                     <Button x:Name="AddLogButton" Content="Add Log" Width="110" Margin="0,0,8,0" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
                     <Button x:Name="SaveProjectButton" Content="Save" Width="90" Height="30" Margin="0,0,8,0" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
-                    <Button Content="Import" Width="90" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
+                    <Button x:Name="ImportCsvButton" Content="Import CSV" Width="110" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65" Click="ImportCsvButton_Click"/>
                     <Button Content="Export" Width="90" Height="30" Margin="8,0,0,0" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
                 </StackPanel>
             </Grid>
@@ -111,7 +111,6 @@
                                 <Rectangle Width="180" Height="360" Canvas.Left="40" Canvas.Top="30" Fill="#1c3d59" Stroke="#89a9c9" StrokeThickness="1"/>
                                 <Rectangle Width="260" Height="360" Canvas.Left="220" Canvas.Top="30" Fill="#224a6b" Stroke="#89a9c9" StrokeThickness="1"/>
                                 <Rectangle Width="180" Height="360" Canvas.Left="480" Canvas.Top="30" Fill="#1a4162" Stroke="#89a9c9" StrokeThickness="1"/>
-
                                 <Rectangle Width="560" Height="30" Canvas.Left="40" Canvas.Top="90" Fill="#2f7db6" Opacity="0.75"/>
                                 <Rectangle Width="560" Height="32" Canvas.Left="40" Canvas.Top="160" Fill="#5eb4d8" Opacity="0.7"/>
                                 <Rectangle Width="560" Height="25" Canvas.Left="40" Canvas.Top="235" Fill="#7cc8b1" Opacity="0.7"/>
@@ -147,7 +146,7 @@
         </Grid>
 
         <Border Grid.Row="2" Background="#0b1724" BorderBrush="#2c4b65" BorderThickness="0,1,0,0">
-            <TextBlock Text=" Ready  |  Project loaded  |  SQLite active  |  Demo mode" Foreground="#a8c1d9" VerticalAlignment="Center" Margin="14,0,0,0"/>
+            <TextBlock Text=" Ready  |  Project loaded  |  SQLite active  |  CSV import ready" Foreground="#a8c1d9" VerticalAlignment="Center" Margin="14,0,0,0"/>
         </Border>
     </Grid>
 </Window>
