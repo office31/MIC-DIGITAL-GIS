@@ -6,11 +6,11 @@
     <title>MIC GeoVision Pro | Logiciel SIG, forages et cartographie</title>
     <meta
       name="description"
-      content="MIC GeoVision Pro est un logiciel professionnel de SIG, forages, logs, cartes et analyses géospatiales."
+      content="MIC GeoVision Pro est une solution professionnelle de SIG, forages, logs, cartes et analyses géospatiales pour les projets géologiques et d’ingénierie."
     />
     <meta
       name="keywords"
-      content="MIC GeoVision Pro, MIC GIS, SIG, géologie, forages, logs, cartographie, géomatique"
+      content="MIC GeoVision Pro, MIC GIS, SIG, géologie, forages, logs, cartographie, géomatique, sous-sol"
     />
     <meta name="robots" content="index, follow" />
     <meta name="author" content="office31" />
@@ -29,7 +29,7 @@
     <meta name="twitter:title" content="MIC GeoVision Pro" />
     <meta
       name="twitter:description"
-      content="Logiciel SIG pour les forages, cartes, logs et analyses géospatiales."
+      content="Visualisez les forages, les cartes et les données techniques avec précision."
     />
     <meta name="twitter:image" content="https://micgis.onrender.com/og-image.jpg" />
 
@@ -59,52 +59,81 @@
   <body>
     <header class="site-header">
       <div class="container header-inner">
-        <div class="brand">
+        <a href="#top" class="brand" aria-label="MIC GeoVision Pro home">
           <div class="brand-mark">MIC</div>
-          <div>
-            <div class="brand-name">MIC GeoVision Pro</div>
-            <div class="brand-tag">Geospatial Intelligence</div>
+          <div class="brand-copy">
+            <span class="brand-name">MIC GeoVision Pro</span>
+            <span class="brand-tag">Geospatial Intelligence</span>
           </div>
-        </div>
+        </a>
 
-        <nav class="nav">
+        <nav class="nav" aria-label="Navigation principale">
           <a href="#features">Fonctionnalités</a>
           <a href="#solutions">Solutions</a>
-          <a href="#github">GitHub</a>
-          <a href="#sponsor">Soutenir</a>
+          <a href="#workflow">Workflow</a>
+          <a href="#support">Soutien</a>
         </nav>
       </div>
     </header>
 
-    <main>
+    <main id="top">
       <section class="hero">
         <div class="container hero-grid">
-          <div>
-            <p class="eyebrow">Logiciel SIG & géomatique</p>
-            <h1>Visualisez les forages, les logs et les cartes avec précision.</h1>
+          <div class="hero-copy">
+            <span class="eyebrow">SIG • Forages • Géologie • Cartographie</span>
+            <h1>Visualisez le sous-sol avec clarté, précision et performance.</h1>
             <p class="lead">
-              MIC GeoVision Pro est une solution professionnelle pensée pour la
-              gestion des données géospatiales, la géologie, les profils,
-              l’analyse des puits et la cartographie technique.
+              MIC GeoVision Pro est une plateforme professionnelle pour la gestion des
+              données de puits, la cartographie, les profils géologiques et la lecture des
+              logs techniques dans des environnements industriels et scientifiques.
             </p>
 
             <div class="cta-row">
-              <a class="btn btn-primary" href="https://github.com/office31/MIC-DIGITAL-GIS">
+              <a class="btn btn-primary" href="https://github.com/office31/MIC-DIGITAL-GIS" target="_blank" rel="noreferrer">
                 Voir le dépôt GitHub
               </a>
-              <a class="btn btn-secondary" href="#sponsor">Soutenir le projet</a>
+              <a class="btn btn-secondary" href="https://github.com/sponsors/office31" target="_blank" rel="noreferrer">
+                Sponsoriser le projet
+              </a>
             </div>
+
+            <ul class="mini-stats" aria-label="statistiques du projet">
+              <li><strong>Forages</strong><span>Gestion de données</span></li>
+              <li><strong>Logs</strong><span>Profil, lithologie</span></li>
+              <li><strong>Cartes</strong><span>Vue SIG intégrée</span></li>
+            </ul>
           </div>
 
-          <div class="hero-card">
-            <div class="status-pill">Projet actif</div>
-            <h3>MIC GIS</h3>
-            <ul>
-              <li>Forages et données de profondeur</li>
-              <li>Logs lithologiques et schémas</li>
-              <li>Cartes et vues SIG</li>
-              <li>Coupe transversale et profil</li>
-              <li>Import / export multi-format</li>
+          <div class="hero-panel wrap-panel">
+            <div class="status-badge">Projet actif</div>
+            <div class="panel-header">
+              <div>
+                <p class="panel-label">Produit</p>
+                <h2>MIC GIS</h2>
+              </div>
+              <div class="mini-dot"></div>
+            </div>
+
+            <div class="dashboard">
+              <div class="dashboard-row">
+                <span>Les couches</span>
+                <strong>12</strong>
+              </div>
+              <div class="dashboard-row">
+                <span>Profils actifs</span>
+                <strong>8</strong>
+              </div>
+              <div class="dashboard-row">
+                <span>Forages importés</span>
+                <strong>146</strong>
+              </div>
+            </div>
+
+            <ul class="feature-list">
+              <li>Cartes et coordonnées géospatiales</li>
+              <li>Logs et sections transversales</li>
+              <li>Import / export de données</li>
+              <li>Rapports visuels prêts à partager</li>
             </ul>
           </div>
         </div>
@@ -112,81 +141,128 @@
 
       <section id="features" class="section">
         <div class="container">
-          <p class="section-tag">Fonctionnalités</p>
-          <h2>Un logiciel conçu pour les données géologiques et géospatiales</h2>
+          <div class="section-heading">
+            <span class="eyebrow">Fonctionnalités</span>
+            <h2>Un logiciel orienté productivité et précision technique</h2>
+          </div>
 
           <div class="cards">
             <article class="card">
+              <div class="icon">01</div>
               <h3>Gestion des forages</h3>
-              <p>Créer, organiser et visualiser les puits et leurs données de profondeur.</p>
+              <p>
+                Stockez, visualisez et exploitez les données de puits, profondeurs et références
+                géologiques dans un environnement structuré.
+              </p>
             </article>
 
             <article class="card">
-              <h3>Logs professionnels</h3>
-              <p>Gérer des logs de lithologie, barres, zones, symboles et textes.</p>
+              <div class="icon">02</div>
+              <h3>Logs et profils</h3>
+              <p>
+                Créez des profils détaillés, des logs lithologiques, des sections verticales et
+                des vues de terrain lisibles.
+              </p>
             </article>
 
             <article class="card">
-              <h3>Cartographie</h3>
-              <p>Superposer des couches, visualiser des cartes et travailler sur des vues SIG.</p>
+              <div class="icon">03</div>
+              <h3>Cartographie SIG</h3>
+              <p>
+                Superposez des cartes, couches, coordonnées et informations spatiales dans un
+                environnement cartographique cohérent.
+              </p>
             </article>
 
             <article class="card">
-              <h3>Profils et coupes</h3>
-              <p>Construire des sections transversales et des vues de terrain facilement lisibles.</p>
+              <div class="icon">04</div>
+              <h3>Import / export</h3>
+              <p>
+                Importez des données tabulaires, CSV, XLSX, LAS et exportez dans des formats utiles
+                pour le reporting et la diffusion.
+              </p>
             </article>
           </div>
         </div>
       </section>
 
       <section id="solutions" class="section alt">
+        <div class="container two-col">
+          <div>
+            <span class="eyebrow">Solutions</span>
+            <h2>Conçu pour les expertises terrain, géologie et ingénierie</h2>
+            <p class="text-block">
+              MIC GeoVision Pro cible les professionnels qui travaillent sur des données souterraines,
+              des cartes techniques et des investigations de terrain. Il s’adresse à la géologie,
+              la géotechnique, l’eau, l’environnement, la construction et les industries
+              nécessitant une lecture claire des couches du sol.
+            </p>
+          </div>
+
+          <div class="list-box wrap-panel">
+            <ul class="check-list">
+              <li>Hydrogéologie et eau souterraine</li>
+              <li>Géologie et sondages</li>
+              <li>Géotechnique et fondations</li>
+              <li>Cartographie SIG et levés</li>
+              <li>Rapports techniques et visualisation</li>
+              <li>Analyse de données spatiales</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="workflow" class="section">
         <div class="container">
-          <p class="section-tag">Cas d’usage</p>
-          <h2>Idéal pour les expertises terrain et environnement</h2>
+          <div class="section-heading">
+            <span class="eyebrow">Workflow</span>
+            <h2>Un parcours simple, rapide et professionnel</h2>
+          </div>
 
-          <div class="grid-two">
-            <div>
-              <ul class="check-list">
-                <li>Géologie et sondages</li>
-                <li>Hydrogéologie et environnement</li>
-                <li>Géotechnique et ingénierie de fondations</li>
-                <li>Puits et forages industriels</li>
-              </ul>
+          <div class="timeline">
+            <div class="step">
+              <span>01</span>
+              <h3>Import</h3>
+              <p>Chargez vos données de puits, de cartes ou de profils.</p>
             </div>
-
-            <div>
-              <ul class="check-list">
-                <li>Cartographie SIG</li>
-                <li>Analyse de données spatiales</li>
-                <li>Rapports techniques et visualisations</li>
-                <li>Export vers PDF / images / tableurs</li>
-              </ul>
+            <div class="step">
+              <span>02</span>
+              <h3>Structuration</h3>
+              <p>Organisez les tables, schémas, couches et éléments géométriques.</p>
+            </div>
+            <div class="step">
+              <span>03</span>
+              <h3>Analyse</h3>
+              <p>Construisez les logs, sections et cartes de manière claire.</p>
+            </div>
+            <div class="step">
+              <span>04</span>
+              <h3>Rapports</h3>
+              <p>Exportez en PDF, images ou tableurs pour mieux partager les résultats.</p>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="github" class="section">
-        <div class="container mini-box">
+      <section id="support" class="section sponsor-section">
+        <div class="container sponsor-box wrap-panel">
           <div>
-            <p class="section-tag">Open source</p>
-            <h2>Le projet est visible et évolutif</h2>
+            <span class="eyebrow">Soutien</span>
+            <h2>Contribuez au développement du projet</h2>
+            <p>
+              Le projet est en cours de développement. Votre aide permet d’accélérer la création des
+              outils de cartographie, de log et de visualisation géospatiale.
+            </p>
           </div>
-          <a class="btn btn-primary" href="https://github.com/office31/MIC-DIGITAL-GIS">
-            Accéder au dépôt GitHub
-          </a>
-        </div>
-      </section>
 
-      <section id="sponsor" class="section sponsor-box">
-        <div class="container mini-box">
-          <div>
-            <p class="section-tag">Soutien</p>
-            <h2>Aidez au développement du projet</h2>
+          <div class="sponsor-actions">
+            <a class="btn btn-primary" href="https://github.com/sponsors/office31" target="_blank" rel="noreferrer">
+              Sponsoriser sur GitHub
+            </a>
+            <a class="btn btn-secondary" href="https://github.com/office31/MIC-DIGITAL-GIS" target="_blank" rel="noreferrer">
+              Accéder au dépôt
+            </a>
           </div>
-          <a class="btn btn-primary" href="https://github.com/sponsors/office31">
-            Sponsoriser sur GitHub
-          </a>
         </div>
       </section>
     </main>
