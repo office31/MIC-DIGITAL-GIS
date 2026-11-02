@@ -26,6 +26,7 @@
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button x:Name="AddBoreholeButton" Content="New Borehole" Width="120" Margin="0,0,8,0" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
+                    <Button x:Name="AddLogButton" Content="Add Log" Width="110" Margin="0,0,8,0" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
                     <Button x:Name="SaveProjectButton" Content="Save" Width="90" Height="30" Margin="0,0,8,0" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
                     <Button Content="Import" Width="90" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
                     <Button Content="Export" Width="90" Height="30" Margin="8,0,0,0" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
@@ -51,11 +52,7 @@
 
                     <TextBlock Text="LOGS" FontSize="11" Foreground="#a8c1d9" FontWeight="Bold" Margin="18,18,0,10"/>
                     <TextBlock Text="{Binding LogsCount, StringFormat='Logs: {0}'}" Margin="0,0,0,10" Foreground="#edf7ff"/>
-                    <ListBox Height="140" Background="#0e1a29" BorderBrush="#2c4b65" Foreground="#edf7ff">
-                        <ListBoxItem Content="Lithology Log" IsSelected="True"/>
-                        <ListBoxItem Content="Depth Log"/>
-                        <ListBoxItem Content="Bar Log"/>
-                    </ListBox>
+                    <ListBox x:Name="LogList" Height="150" Background="#0e1a29" BorderBrush="#2c4b65" Foreground="#edf7ff" DisplayMemberPath="Name"/>
                 </StackPanel>
             </Border>
 
