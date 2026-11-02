@@ -42,9 +42,10 @@
             <Border Background="#0d1b2a" BorderBrush="#2c4b65" BorderThickness="0,0,1,0">
                 <StackPanel Margin="12,12,10,12">
                     <TextBlock Text="PROJECT" FontSize="11" Foreground="#a8c1d9" FontWeight="Bold" Margin="0,0,0,12"/>
-                    <TextBox Text="MIC GIS Demo" Height="30" Margin="0,0,0,18" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
+                    <TextBox Text="{Binding ProjectName}" Height="30" Margin="0,0,0,18" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
 
                     <TextBlock Text="BOREHOLES" FontSize="11" Foreground="#a8c1d9" FontWeight="Bold" Margin="0,0,0,10"/>
+                    <TextBlock Text="{Binding BoreholesCount, StringFormat='Total: {0}'}" Margin="0,0,0,10" Foreground="#edf7ff"/>
                     <ListBox Height="140" Background="#0e1a29" BorderBrush="#2c4b65" Foreground="#edf7ff">
                         <ListBoxItem Content="B-01" IsSelected="True"/>
                         <ListBoxItem Content="B-02"/>
@@ -52,6 +53,7 @@
                     </ListBox>
 
                     <TextBlock Text="LOGS" FontSize="11" Foreground="#a8c1d9" FontWeight="Bold" Margin="18,18,0,10"/>
+                    <TextBlock Text="{Binding LogsCount, StringFormat='Logs: {0}'}" Margin="0,0,0,10" Foreground="#edf7ff"/>
                     <ListBox Height="140" Background="#0e1a29" BorderBrush="#2c4b65" Foreground="#edf7ff">
                         <ListBoxItem Content="Lithology Log" IsSelected="True"/>
                         <ListBoxItem Content="Depth Log"/>
