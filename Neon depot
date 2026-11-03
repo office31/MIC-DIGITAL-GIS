@@ -1,0 +1,12 @@
+npm install -g neon@latest
+# si ça ne marche pas :
+# npx neon@latest
+
+# si la CLI ouvre une page de connexion, termine-là dans le navigateur
+# si ça timeoute / échoue :
+# neon login
+# puis recommence
+
+neon init -y --project-id dry-boat-11568962 --branch production --services postgres,auth
+neon deploy
+neon env pull
