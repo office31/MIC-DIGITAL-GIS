@@ -1,58 +1,33 @@
 # MIC GeoVision Pro / MIC GIS
 
-## Description
-MIC GeoVision Pro is a professional geospatial and geological software project inspired by advanced well-log, borehole, cross-section, and mapping workflows.
-
-## Project goal
-Build a modern GIS / geoscience tool for:
-- boreholes and well data
-- lithology and log analysis
-- cross-sections and map views
-- geospatial data exploration
-- export and reporting
-
-## Stack for the first deployment
-- Website static: Render Static Site
-- API: Node.js + Express on Render
-- Source code: GitHub
-- Optional future backend: PostgreSQL / GIS layer / .NET desktop app
+Professional geological and geospatial software for borehole, lithology-log, mapping, and subsurface data workflows.
 
 ## Repository structure
-- `api/` : Node.js API for Render
-- `website/` : static landing page for the product
-- `render.yaml` : deployment config for Render
-- `.github/FUNDING.yml` : GitHub sponsor button configuration
+- `api/` — Express API, including optional Neon PostgreSQL persistence.
+- `website/` — static product landing page.
+- `software/` — .NET desktop application and core models.
+- `render.yaml` — Render Blueprint for the API and static website.
 
-## Local development
-
-### API
+## Run the API locally
 ```bash
 cd api
 npm install
 npm start
 ```
 
-Then open:
-- http://localhost:10000/
-- http://localhost:10000/health
-- http://localhost:10000/api/status
+Without `DATABASE_URL`, the API starts but database endpoints are disabled. To enable Neon locally, set `DATABASE_URL` to the Neon pooled PostgreSQL connection string with `sslmode=require` before starting the API. Never commit database credentials.
 
-### Website
-Open `website/index.html` in a browser, or serve it locally with any static server.
+## Neon API endpoints
+- `GET /health`
+- `GET /api/status`
+- `GET /api/db/health`
+- `GET /api/projects`
+- `POST /api/projects` with JSON such as `{"name":"Site A","description":"Optional details"}`
+
+See [`api/README.md`](api/README.md) for Neon setup and test commands.
 
 ## Render deployment
-1. Push this repository to GitHub.
-2. Log in to Render.
-3. Create a new Web Service for `api/` using the `render.yaml` configuration.
-4. Create a Static Site for `website/`.
-5. Make sure the canonical URL matches your final hosted domain.
+The `render.yaml` file declares the API service and static website. Set `DATABASE_URL` in the Render API service environment to your Neon pooled connection string. Render's Blueprint configuration marks it as a secret input (`sync: false`).
 
-## Sponsor button
-GitHub sponsor support is configured through `.github/FUNDING.yml`.
-
-## Recommended product name
-- MIC GeoVision Pro
-- Alternative: MIC GeoStrata
-
-## Notes
-This repository is a foundational deployment scaffold. The next step is to add the desktop application, geospatial data models, and a user interface for logs, boreholes, and maps.
+## Desktop MVP
+The .NET solution and local SQLite persistence are documented under `software/README.md`.

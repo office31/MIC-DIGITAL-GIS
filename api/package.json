@@ -1,13 +1,14 @@
 {
   "name": "micgis-api",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "description": "API for MIC GeoVision Pro / MIC GIS",
+  "description": "API for MIC GeoVision Pro / MIC GIS with Neon PostgreSQL support",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "pg": "^8.13.1"
   }
 }
