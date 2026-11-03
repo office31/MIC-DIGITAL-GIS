@@ -16,8 +16,11 @@ services:
     name: micgis-website
     env: static
     rootDir: website
-    buildCommand: ""
-    staticPublishPath: .
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_NEON_AUTH_URL
+        sync: false
     routes:
       - type: rewrite
         source: /*

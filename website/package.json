@@ -1,0 +1,17 @@
+{
+  "name": "mic-geovision-website",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "dependencies": {
+    "@neon/auth": "latest"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}
