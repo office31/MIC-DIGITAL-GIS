@@ -1,4 +1,6 @@
 import { createAuthClient } from "@neon/auth";
+import { initializeWorldClock } from "./world-clock.js";
+import "./world-clock.css";
 
 const year = document.querySelector("[data-current-year]");
 if (year) year.textContent = String(new Date().getFullYear());
@@ -25,6 +27,8 @@ if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-mot
   }, { threshold: 0.12 });
   targets.forEach((element) => observer.observe(element));
 } else targets.forEach((element) => element.classList.add("is-visible"));
+
+initializeWorldClock();
 
 const status = document.querySelector("#auth-status");
 const signupForm = document.querySelector("#signup-panel");

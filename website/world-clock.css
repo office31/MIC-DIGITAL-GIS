@@ -1,0 +1,172 @@
+/* World clock */
+.world-clock-section {
+  background:
+    radial-gradient(circle at 85% 12%, rgba(14, 165, 233, 0.12), transparent 28%),
+    rgba(255, 255, 255, 0.015);
+  border-block: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.world-clock-heading {
+  max-width: 720px;
+}
+
+.world-clock-heading p {
+  color: var(--muted);
+  max-width: 660px;
+}
+
+.world-clock-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 28px 0 20px;
+}
+
+.world-clock-toolbar label {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.world-clock-toolbar select,
+.world-clock-add {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0 13px;
+  color: var(--text);
+  background: #0b1727;
+  font: inherit;
+}
+
+.world-clock-toolbar select {
+  min-width: min(320px, 100%);
+}
+
+.world-clock-toolbar select:focus-visible,
+.world-clock-add:focus-visible,
+.world-clock-remove:focus-visible {
+  outline: 3px solid rgba(56, 189, 248, 0.48);
+  outline-offset: 3px;
+}
+
+.world-clock-add {
+  cursor: pointer;
+  color: #041821;
+  border: 0;
+  background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+  font-weight: 700;
+}
+
+.world-clock-add:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.world-clock-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
+}
+
+.world-clock-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+  gap: 16px;
+}
+
+.world-clock-card {
+  position: relative;
+  min-width: 0;
+  padding: 22px 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(16, 32, 49, 0.94), rgba(8, 18, 30, 0.94));
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.16);
+}
+
+.world-clock-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.world-clock-card h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.world-clock-offset {
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.world-clock-time {
+  display: block;
+  margin: 12px 0 8px;
+  color: var(--text);
+  font-size: clamp(2.15rem, 5vw, 2.8rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.055em;
+  line-height: 1.15;
+}
+
+.world-clock-details {
+  display: grid;
+  gap: 3px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.world-clock-date::first-letter {
+  text-transform: uppercase;
+}
+
+.world-clock-zone {
+  opacity: 0.76;
+}
+
+.world-clock-remove {
+  margin-top: 15px;
+  padding: 5px 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.world-clock-remove:hover {
+  color: #fecaca;
+}
+
+.world-clock-footnote {
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+@media (max-width: 720px) {
+  .world-clock-live {
+    width: 100%;
+    margin-left: 0;
+  }
+  .world-clock-toolbar select,
+  .world-clock-add {
+    width: 100%;
+  }
+}
