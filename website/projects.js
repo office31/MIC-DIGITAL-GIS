@@ -1,15 +1,5 @@
 import { API_BASE_URL } from "./api-config.js";
 
-const PROJECTS = [
-  { name: "Paris", zone: "Europe/Paris" },
-  { name: "Londres", zone: "Europe/London" },
-  { name: "New York", zone: "America/New_York" },
-  { name: "Los Angeles", zone: "America/Los_Angeles" },
-  { name: "Dubaï", zone: "Asia/Dubai" },
-  { name: "Tokyo", zone: "Asia/Tokyo" },
-  { name: "Sydney", zone: "Australia/Sydney" },
-];
-
 function messageFor(error) {
   if (error.name === "AbortError") {
     return "L’API met trop de temps à répondre. Elle est peut-être en veille : réessayez dans une minute.";

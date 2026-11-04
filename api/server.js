@@ -5,13 +5,16 @@ const { pool, initializeDatabase } = require("./db");
 
 const app = express();
 const port = process.env.PORT || 10000;
-const productionSiteOrigin = "https://micgis.onrender.com";
+const productionSiteOrigins = new Set([
+  "https://micgis.onrender.com",
+  "https://micgis-website.onrender.com",
+]);
 const developmentOriginPattern = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
 
 app.use(cors({
   origin(origin, callback) {
     // Requests without an Origin header (for example curl or health checks) are allowed.
-    callback(null, !origin || origin === productionSiteOrigin || developmentOriginPattern.test(origin));
+    callback(null, !origin || productionSiteOrigins.has(origin) || developmentOriginPattern.test(origin));
   },
   methods: ["GET", "POST"],
   allowedHeaders: ["Content-Type"],
