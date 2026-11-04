@@ -1,18 +1,26 @@
 const express = require("express");
+const cors = require("cors");
 const { randomUUID } = require("node:crypto");
 const { pool, initializeDatabase } = require("./db");
 
 const app = express();
 const port = process.env.PORT || 10000;
+const productionSiteOrigin = "https://micgis.onrender.com";
+const developmentOriginPattern = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
 
+app.use(cors({
+  origin(origin, callback) {
+    // Requests without an Origin header (for example curl or health checks) are allowed.
+    callback(null, !origin || origin === productionSiteOrigin || developmentOriginPattern.test(origin));
+  },
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type"],
+}));
 app.use(express.json({ limit: "32kb" }));
 
 function requireDatabase(res) {
   if (!pool) {
-    res.status(503).json({
-      error: "Database is not configured",
-      hint: "Set DATABASE_URL to your Neon PostgreSQL connection string in Render environment variables.",
-    });
+    res.status(503).json({ error: "Database is not configured" });
     return false;
   }
   return true;
@@ -28,7 +36,7 @@ app.get("/", (_req, res) => {
 });
 
 app.get("/health", (_req, res) => {
-  res.json({ ok: true, service: "micgis-api", status: "healthy" });
+  res.json({ status: "ok" });
 });
 
 app.get("/api/status", (_req, res) => {
