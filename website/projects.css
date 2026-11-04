@@ -1,0 +1,24 @@
+/* Project listing and creation form — shares the landing page palette. */
+.projects-intro { color: var(--muted); max-width: 700px; }
+.projects-layout { display: grid; grid-template-columns: minmax(260px, .8fr) minmax(0, 1.2fr); gap: 24px; align-items: start; }
+.projects-form { display: grid; gap: 10px; padding: 24px; }
+.projects-form h3, .projects-list-header h3 { margin: 0 0 8px; }
+.projects-form label { margin-top: 5px; font-weight: 600; }
+.projects-form label span { color: var(--muted); font-weight: 400; }
+.projects-form input, .projects-form textarea { width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px; color: var(--text); background: rgba(2, 10, 18, .55); font: inherit; }
+.projects-form input:focus-visible, .projects-form textarea:focus-visible { outline: 3px solid rgba(56, 189, 248, .4); border-color: var(--primary); }
+.projects-form textarea { resize: vertical; }
+.projects-form button:disabled { opacity: .6; cursor: wait; }
+.projects-results { min-width: 0; }
+.projects-list-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.projects-refresh { border: 1px solid var(--line); border-radius: 9px; padding: 8px 12px; color: var(--text); background: transparent; font: inherit; cursor: pointer; }
+.projects-status { min-height: 48px; margin: 8px 0 14px; padding: 11px 13px; border: 1px solid var(--line); border-radius: 10px; color: var(--muted); font-size: .9rem; }
+.projects-status[data-kind="success"] { color: #b8f7d1; border-color: rgba(34, 197, 94, .35); }
+.projects-status[data-kind="error"] { color: #fecaca; border-color: rgba(248, 113, 113, .4); }
+.projects-list { display: grid; gap: 12px; }
+.project-item { padding: 17px 19px; }
+.project-item h4 { margin: 0 0 6px; font-size: 1.05rem; }
+.project-item p { margin: 0 0 8px; color: var(--muted); white-space: pre-wrap; overflow-wrap: anywhere; }
+.project-item time { color: var(--muted); font-size: .8rem; }
+.projects-empty { color: var(--muted); }
+@media (max-width: 760px) { .projects-layout { grid-template-columns: 1fr; } }
