@@ -1,4 +1,7 @@
+using System;
 using System.ComponentModel;
+using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using MICGeoVisionPro.Core.Models;
 using MICGeoVisionPro.Core.Services;
@@ -8,7 +11,7 @@ namespace MICGeoVisionPro.Desktop.ViewModels;
 public class MainViewModel : INotifyPropertyChanged
 {
     private readonly ProjectRepository _repository;
-    private Project _project;
+    private readonly Project _project;
 
     public MainViewModel()
     {
@@ -20,10 +23,6 @@ public class MainViewModel : INotifyPropertyChanged
 
         _repository = new ProjectRepository(Path.Combine(dataDirectory, "project.db"));
         _project = _repository.LoadOrCreateDefault();
-
-        ProjectName = _project.Name;
-        BoreholesCount = _project.Boreholes.Count;
-        LogsCount = _project.Boreholes.Sum(b => b.Logs.Count);
     }
 
     public string ProjectName
@@ -37,21 +36,9 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    public int BoreholesCount
-    {
-        get => _project.Boreholes.Count;
-        set
-        {
-            if (_project.Boreholes.Count == value) return;
-            OnPropertyChanged();
-        }
-    }
+    public int BoreholesCount => _project.Boreholes.Count;
 
-    public int LogsCount
-    {
-        get => _project.Boreholes.Sum(b => b.Logs.Count);
-        set => OnPropertyChanged();
-    }
+    public int LogsCount => _project.Boreholes.Sum(b => b.Logs.Count);
 
     public Project Project => _project;
 
