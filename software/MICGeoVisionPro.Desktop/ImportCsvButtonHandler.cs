@@ -1,11 +1,12 @@
 using System;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using Microsoft.Win32;
 
 namespace MICGeoVisionPro.Desktop
 {
-    public partial class MainWindow
+    public partial class MainWindow : Window
     {
         private readonly MICGeoVisionPro.Core.Services.CsvImportService _csvImportService = new();
 
