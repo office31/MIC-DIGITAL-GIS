@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Windows;
 using MICGeoVisionPro.Core.Models;
 using MICGeoVisionPro.Core.Services;
 
@@ -13,7 +13,7 @@ namespace MICGeoVisionPro.Desktop.ViewModels
     public class ProjectViewModel : INotifyPropertyChanged
     {
         private readonly ProjectRepository _repository;
-        private Project _project;
+        private readonly Project _project;
         private string _projectName;
         private Borehole? _selectedBorehole;
         private Log? _selectedLog;
@@ -30,8 +30,8 @@ namespace MICGeoVisionPro.Desktop.ViewModels
             _projectName = _project.Name;
 
             Boreholes = new ObservableCollection<Borehole>(_project.Boreholes);
-            SelectedBorehole = Boreholes.FirstOrDefault();
             Logs = new ObservableCollection<Log>();
+            SelectedBorehole = Boreholes.FirstOrDefault();
             RefreshLogs();
         }
 
@@ -134,11 +134,7 @@ namespace MICGeoVisionPro.Desktop.ViewModels
                 }
             }
 
-            if (Logs.Count > 0)
-            {
-                SelectedLog = Logs.First();
-            }
-
+            SelectedLog = Logs.FirstOrDefault();
             OnPropertyChanged(nameof(LogsCount));
         }
 
@@ -157,4 +153,3 @@ namespace MICGeoVisionPro.Desktop.ViewModels
         }
     }
 }
-
