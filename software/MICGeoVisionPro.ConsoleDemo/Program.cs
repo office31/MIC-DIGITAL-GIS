@@ -2,7 +2,7 @@ using MICGeoVisionPro.Core.Models;
 using MICGeoVisionPro.Core.Services;
 
 var projectService = new ProjectService();
-var importService = new DataImportService();
+var importService = new CsvImportService();
 
 var project = projectService.CreateProject("MIC GIS Demo", "First working geological project");
 
@@ -28,10 +28,9 @@ var csvPath = Path.Combine(AppContext.BaseDirectory, "sample-data.csv");
 File.WriteAllText(csvPath,
     "Well,Depth,Value\nB-01,0,0\nB-01,12,12\nB-01,28,28\nB-01,76,76\n");
 
-var table = importService.ImportCsv(csvPath);
+var table = importService.ImportTable(csvPath);
 
 Console.WriteLine($"Project: {project.Name}");
 Console.WriteLine($"Borehole: {borehole.Name} | X={borehole.X} Y={borehole.Y} Elev={borehole.Elevation} Depth={borehole.TotalDepth}");
 Console.WriteLine($"Logs: {borehole.Logs.Count}");
 Console.WriteLine($"Imported rows: {table.Rows.Count}");
-Console.WriteLine("Demo complete.");

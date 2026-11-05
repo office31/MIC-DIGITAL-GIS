@@ -14,6 +14,7 @@ namespace MICGeoVisionPro.Desktop.ViewModels
     {
         private readonly ProjectRepository _repository;
         private readonly Project _project;
+        private readonly CsvImportService _csvImportService = new();
         private string _projectName;
         private Borehole? _selectedBorehole;
         private Log? _selectedLog;
@@ -142,7 +143,7 @@ namespace MICGeoVisionPro.Desktop.ViewModels
 
         public int ImportCsv(string filePath)
         {
-            var table = new DataImportService().ImportCsv(filePath);
+            var table = _csvImportService.ImportTable(filePath);
             _project.Tables.Add(table);
             ImportedTables.Add(table);
             SelectedImportedTable = table;

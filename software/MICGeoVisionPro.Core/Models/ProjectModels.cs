@@ -68,7 +68,10 @@ public class LithologyInterval
 
 public class DataTable
 {
+    public Guid Id { get; set; } = Guid.NewGuid();
     public string Name { get; set; } = "Table";
+    public string? SourceFileName { get; set; }
+    public DateTime ImportedAtUtc { get; set; } = DateTime.UtcNow;
     public List<DataColumn> Columns { get; set; } = new();
     public List<Dictionary<string, object?>> Rows { get; set; } = new();
 }
@@ -76,7 +79,9 @@ public class DataTable
 public class DataColumn
 {
     public string Name { get; set; } = string.Empty;
-    public DataColumnType Type { get; set; }
+    public int Ordinal { get; set; }
+    public DataColumnType Type { get; set; } = DataColumnType.String;
+    public bool IsNullable { get; set; }
 }
 
 public class MapLayer
