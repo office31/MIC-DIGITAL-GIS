@@ -1,53 +1,50 @@
-namespace MICGeoVisionPro.Core.Services;
-
+using System.IO;
 using MICGeoVisionPro.Core.Models;
 
+namespace MICGeoVisionPro.Core.Services;
+
+/// <summary>
+/// Imports CSV files into the application's table model using the shared CSV parser.
+/// </summary>
 public class DataImportService
 {
+    private readonly CsvImportService _csvImportService = new();
+
     public DataTable ImportCsv(string filePath)
     {
-        var lines = File.ReadAllLines(filePath);
-        if (lines.Length < 2)
+        var importedRows = _csvImportService.Import(filePath);
+        var table = new DataTable
         {
-            throw new InvalidOperationException("CSV file must contain headers and at least one row.");
+            Name = Path.GetFileNameWithoutExtension(filePath)
+        };
+
+        if (importedRows.Count == 0)
+        {
+            return table;
         }
 
-        var headers = SplitCsvLine(lines[0]);
-        var table = new DataTable { Name = Path.GetFileNameWithoutExtension(filePath) };
-
-        foreach (var header in headers)
+        foreach (var columnName in importedRows[0].Keys)
         {
             table.Columns.Add(new DataColumn
             {
-                Name = header.Trim(),
+                Name = columnName,
                 Type = DataColumnType.String
             });
         }
 
-        for (var i = 1; i < lines.Length; i++)
+        foreach (var importedRow in importedRows)
         {
-            if (string.IsNullOrWhiteSpace(lines[i]))
-            {
-                continue;
-            }
-
-            var columns = SplitCsvLine(lines[i]);
             var row = new Dictionary<string, object?>();
-
-            for (var j = 0; j < table.Columns.Count; j++)
+            foreach (var column in table.Columns)
             {
-                var value = j < columns.Length ? columns[j].Trim() : string.Empty;
-                row[table.Columns[j].Name] = value;
+                row[column.Name] = importedRow.TryGetValue(column.Name, out var value)
+                    ? value
+                    : string.Empty;
             }
 
             table.Rows.Add(row);
         }
 
         return table;
-    }
-
-    private static string[] SplitCsvLine(string line)
-    {
-        return line.Split(',');
     }
 }

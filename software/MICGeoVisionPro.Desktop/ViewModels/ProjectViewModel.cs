@@ -17,7 +17,7 @@ namespace MICGeoVisionPro.Desktop.ViewModels
         private string _projectName;
         private Borehole? _selectedBorehole;
         private Log? _selectedLog;
-        private MICGeoVisionPro.Core.Models.DataTable? _selectedImportedTable;
+        private DataTable? _selectedImportedTable;
 
         public ProjectViewModel()
         {
@@ -32,7 +32,7 @@ namespace MICGeoVisionPro.Desktop.ViewModels
 
             Boreholes = new ObservableCollection<Borehole>(_project.Boreholes);
             Logs = new ObservableCollection<Log>();
-            ImportedTables = new ObservableCollection<MICGeoVisionPro.Core.Models.DataTable>(_project.Tables);
+            ImportedTables = new ObservableCollection<DataTable>(_project.Tables);
             ImportedRowPreviews = new ObservableCollection<string>();
             SelectedBorehole = Boreholes.FirstOrDefault();
             SelectedImportedTable = ImportedTables.FirstOrDefault();
@@ -41,7 +41,7 @@ namespace MICGeoVisionPro.Desktop.ViewModels
 
         public ObservableCollection<Borehole> Boreholes { get; }
         public ObservableCollection<Log> Logs { get; }
-        public ObservableCollection<MICGeoVisionPro.Core.Models.DataTable> ImportedTables { get; }
+        public ObservableCollection<DataTable> ImportedTables { get; }
         public ObservableCollection<string> ImportedRowPreviews { get; }
 
         public Borehole? SelectedBorehole
@@ -69,7 +69,7 @@ namespace MICGeoVisionPro.Desktop.ViewModels
             }
         }
 
-        public MICGeoVisionPro.Core.Models.DataTable? SelectedImportedTable
+        public DataTable? SelectedImportedTable
         {
             get => _selectedImportedTable;
             set
@@ -142,27 +142,7 @@ namespace MICGeoVisionPro.Desktop.ViewModels
 
         public int ImportCsv(string filePath)
         {
-            var importedRows = new CsvImportService().Import(filePath);
-            var table = new MICGeoVisionPro.Core.Models.DataTable
-            {
-                Name = Path.GetFileNameWithoutExtension(filePath)
-            };
-
-            if (importedRows.Count > 0)
-            {
-                foreach (var columnName in importedRows[0].Keys)
-                {
-                    table.Columns.Add(new DataColumn { Name = columnName, Type = DataColumnType.String });
-                }
-
-                foreach (var importedRow in importedRows)
-                {
-                    table.Rows.Add(table.Columns.ToDictionary(
-                        column => column.Name,
-                        column => (object?)(importedRow.TryGetValue(column.Name, out var value) ? value : string.Empty)));
-                }
-            }
-
+            var table = new DataImportService().ImportCsv(filePath);
             _project.Tables.Add(table);
             ImportedTables.Add(table);
             SelectedImportedTable = table;
