@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using MICGeoVisionPro.Core.Models;
 using MICGeoVisionPro.Core.Services;
 
@@ -35,6 +36,11 @@ namespace MICGeoVisionPro.Desktop.ViewModels
             Logs = new ObservableCollection<Log>();
             ImportedTables = new ObservableCollection<DataTable>(_project.Tables);
             ImportedRowPreviews = new ObservableCollection<string>();
+
+            AddBoreholeCommand = new RelayCommand(_ => AddNextBorehole());
+            AddLogCommand = new RelayCommand(_ => AddNextLithologyLog(), _ => SelectedBorehole is not null);
+            SaveProjectCommand = new RelayCommand(_ => Save());
+
             SelectedBorehole = Boreholes.FirstOrDefault();
             SelectedImportedTable = ImportedTables.FirstOrDefault();
             RefreshLogs();
@@ -44,6 +50,10 @@ namespace MICGeoVisionPro.Desktop.ViewModels
         public ObservableCollection<Log> Logs { get; }
         public ObservableCollection<DataTable> ImportedTables { get; }
         public ObservableCollection<string> ImportedRowPreviews { get; }
+
+        public ICommand AddBoreholeCommand { get; }
+        public ICommand AddLogCommand { get; }
+        public ICommand SaveProjectCommand { get; }
 
         public Borehole? SelectedBorehole
         {
@@ -56,6 +66,7 @@ namespace MICGeoVisionPro.Desktop.ViewModels
                 OnPropertyChanged(nameof(SelectedBoreholeName));
                 OnPropertyChanged(nameof(SelectedBoreholeTotalDepth));
                 RefreshLogs();
+                (AddLogCommand as RelayCommand)?.RaiseCanExecuteChanged();
             }
         }
 
@@ -164,6 +175,26 @@ namespace MICGeoVisionPro.Desktop.ViewModels
 
             SelectedLog = Logs.FirstOrDefault();
             OnPropertyChanged(nameof(LogsCount));
+        }
+
+        private void AddNextBorehole()
+        {
+            var index = Boreholes.Count;
+            AddBorehole($"B-{index + 1:00}", 500 + index * 10, 600 + index * 10, 120, 40 + index * 5);
+        }
+
+        private void AddNextLithologyLog()
+        {
+            if (SelectedBorehole is null) return;
+
+            var intervals = new List<LithologyInterval>
+            {
+                new() { StartDepth = 0, EndDepth = 10, Lithology = "Topsoil" },
+                new() { StartDepth = 10, EndDepth = 25, Lithology = "Clay" },
+                new() { StartDepth = 25, EndDepth = 35, Lithology = "Sand" }
+            };
+
+            AddLithologyLog($"Lithology {SelectedBorehole.Logs.Count + 1}", intervals);
         }
 
         private void RefreshImportedRowPreviews()

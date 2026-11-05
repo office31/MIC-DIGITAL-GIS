@@ -25,11 +25,11 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="AddBoreholeButton" Content="New Borehole" Width="120" Margin="0,0,8,0" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
-                    <Button x:Name="AddLogButton" Content="Add Log" Width="110" Margin="0,0,8,0" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
-                    <Button x:Name="SaveProjectButton" Content="Save" Width="90" Height="30" Margin="0,0,8,0" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
-                    <Button x:Name="ImportCsvButton" Content="Import CSV" Width="110" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65" Click="ImportCsvButton_Click"/>
-                    <Button Content="Export" Width="90" Height="30" Margin="8,0,0,0" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
+                    <Button Content="New Borehole" Command="{Binding AddBoreholeCommand}" Width="120" Margin="0,0,8,0" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
+                    <Button Content="Add Log" Command="{Binding AddLogCommand}" Width="110" Margin="0,0,8,0" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
+                    <Button Content="Save" Command="{Binding SaveProjectCommand}" Width="90" Height="30" Margin="0,0,8,0" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
+                    <Button Content="Import CSV" Width="110" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65" Click="ImportCsvButton_Click"/>
+                    <Button Content="Export" Width="90" Height="30" Margin="8,0,0,0" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65" IsEnabled="False"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -44,15 +44,15 @@
             <Border Background="#0d1b2a" BorderBrush="#2c4b65" BorderThickness="0,0,1,0">
                 <StackPanel Margin="12,12,10,12">
                     <TextBlock Text="PROJECT" FontSize="11" Foreground="#a8c1d9" FontWeight="Bold" Margin="0,0,0,12"/>
-                    <TextBox x:Name="ProjectNameBox" Text="{Binding ProjectName}" Height="30" Margin="0,0,0,18" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
+                    <TextBox Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}" Height="30" Margin="0,0,0,18" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
 
                     <TextBlock Text="BOREHOLES" FontSize="11" Foreground="#a8c1d9" FontWeight="Bold" Margin="0,0,0,10"/>
                     <TextBlock Text="{Binding BoreholesCount, StringFormat='Total: {0}'}" Margin="0,0,0,10" Foreground="#edf7ff"/>
-                    <ListBox x:Name="BoreholeList" Height="140" Background="#0e1a29" BorderBrush="#2c4b65" Foreground="#edf7ff" DisplayMemberPath="Name"/>
+                    <ListBox ItemsSource="{Binding Boreholes}" SelectedItem="{Binding SelectedBorehole, Mode=TwoWay}" Height="140" Background="#0e1a29" BorderBrush="#2c4b65" Foreground="#edf7ff" DisplayMemberPath="Name"/>
 
                     <TextBlock Text="LOGS" FontSize="11" Foreground="#a8c1d9" FontWeight="Bold" Margin="18,18,0,10"/>
                     <TextBlock Text="{Binding LogsCount, StringFormat='Logs: {0}'}" Margin="0,0,0,10" Foreground="#edf7ff"/>
-                    <ListBox x:Name="LogList" Height="150" Background="#0e1a29" BorderBrush="#2c4b65" Foreground="#edf7ff" DisplayMemberPath="Name"/>
+                    <ListBox ItemsSource="{Binding Logs}" SelectedItem="{Binding SelectedLog, Mode=TwoWay}" Height="150" Background="#0e1a29" BorderBrush="#2c4b65" Foreground="#edf7ff" DisplayMemberPath="Name"/>
                 </StackPanel>
             </Border>
 
@@ -68,16 +68,14 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-
                         <StackPanel>
                             <TextBlock Text="CURRENT VIEW" FontSize="11" Foreground="#a8c1d9" FontWeight="Bold"/>
                             <TextBlock Text="Borehole View" FontSize="24" FontWeight="Bold" Margin="0,4,0,0"/>
                         </StackPanel>
-
                         <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button Content="Borehole" Width="90" Height="30" Background="#0ea5e9" Foreground="#041821" Margin="0,0,8,0"/>
-                            <Button Content="Map" Width="70" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
-                            <Button Content="Cross Section" Width="110" Height="30" Margin="8,0,0,0" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
+                            <Button Content="Map" Width="70" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65" IsEnabled="False"/>
+                            <Button Content="Cross Section" Width="110" Height="30" Margin="8,0,0,0" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65" IsEnabled="False"/>
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -88,16 +86,14 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-
                         <Border Background="#122840" BorderBrush="#2c4b65" BorderThickness="0,0,0,1" Padding="12">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="Depth" Foreground="#a8c1d9" VerticalAlignment="Center"/>
-                                <TextBox Width="120" Margin="10,0,0,0" Height="28" Background="#0d1b2a" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
+                                <TextBox Width="120" Margin="10,0,0,0" Height="28" Background="#0d1b2a" Foreground="#edf7ff" BorderBrush="#2c4b65" IsEnabled="False"/>
                                 <TextBlock Text="Elevation" Foreground="#a8c1d9" VerticalAlignment="Center" Margin="18,0,0,0"/>
-                                <TextBox Width="120" Margin="10,0,0,0" Height="28" Background="#0d1b2a" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
+                                <TextBox Width="120" Margin="10,0,0,0" Height="28" Background="#0d1b2a" Foreground="#edf7ff" BorderBrush="#2c4b65" IsEnabled="False"/>
                             </StackPanel>
                         </Border>
-
                         <Grid Grid.Row="1" Margin="16">
                             <Grid.Background>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
@@ -105,8 +101,7 @@
                                     <GradientStop Color="#102739" Offset="1"/>
                                 </LinearGradientBrush>
                             </Grid.Background>
-
-                            <Canvas Width="Auto" Height="Auto">
+                            <Canvas>
                                 <Rectangle Width="620" Height="360" Canvas.Left="30" Canvas.Top="30" Fill="#183146" Stroke="#89a9c9" StrokeThickness="1"/>
                                 <Rectangle Width="180" Height="360" Canvas.Left="40" Canvas.Top="30" Fill="#1c3d59" Stroke="#89a9c9" StrokeThickness="1"/>
                                 <Rectangle Width="260" Height="360" Canvas.Left="220" Canvas.Top="30" Fill="#224a6b" Stroke="#89a9c9" StrokeThickness="1"/>
@@ -127,24 +122,19 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="12">
                         <TextBlock Text="PROPERTIES" FontSize="11" Foreground="#a8c1d9" FontWeight="Bold" Margin="0,0,0,12"/>
-
                         <TextBlock Text="Borehole" Foreground="#edf7ff" Margin="0,8,0,4" FontWeight="Bold"/>
                         <TextBlock Text="{Binding SelectedBoreholeName}" FontSize="18" Foreground="#edf7ff" Margin="0,0,0,8"/>
-
                         <TextBlock Text="Total Depth" Foreground="#edf7ff" Margin="0,16,0,4" FontWeight="Bold"/>
                         <TextBlock Text="{Binding SelectedBoreholeTotalDepth}" Foreground="#edf7ff"/>
-
                         <TextBlock Text="Log Type" Foreground="#edf7ff" Margin="0,16,0,4" FontWeight="Bold"/>
-                        <ComboBox Height="30" SelectedIndex="0" Background="#112230" BorderBrush="#2c4b65" Foreground="#edf7ff">
+                        <ComboBox Height="30" SelectedIndex="0" Background="#112230" BorderBrush="#2c4b65" Foreground="#edf7ff" IsEnabled="False">
                             <ComboBoxItem Content="Lithology"/>
                             <ComboBoxItem Content="Depth"/>
                             <ComboBoxItem Content="Bar"/>
                         </ComboBox>
-
-                        <Button Content="Apply" Width="120" Height="34" Margin="0,24,0,16" Background="#0ea5e9" Foreground="#041821" HorizontalAlignment="Left"/>
-
+                        <Button Content="Apply" Width="120" Height="34" Margin="0,24,0,16" Background="#0ea5e9" Foreground="#041821" HorizontalAlignment="Left" IsEnabled="False"/>
                         <TextBlock Text="IMPORTED CSV TABLES" FontSize="11" Foreground="#a8c1d9" FontWeight="Bold" Margin="0,8,0,8"/>
-                        <ListBox ItemsSource="{Binding ImportedTables}" SelectedItem="{Binding SelectedImportedTable}" DisplayMemberPath="Name" Height="90" Background="#0e1a29" BorderBrush="#2c4b65" Foreground="#edf7ff"/>
+                        <ListBox ItemsSource="{Binding ImportedTables}" SelectedItem="{Binding SelectedImportedTable, Mode=TwoWay}" DisplayMemberPath="Name" Height="90" Background="#0e1a29" BorderBrush="#2c4b65" Foreground="#edf7ff"/>
                         <TextBlock Text="ROWS" FontSize="11" Foreground="#a8c1d9" FontWeight="Bold" Margin="0,12,0,6"/>
                         <ListBox ItemsSource="{Binding ImportedRowPreviews}" Height="220" Background="#0e1a29" BorderBrush="#2c4b65" Foreground="#edf7ff"/>
                     </StackPanel>
