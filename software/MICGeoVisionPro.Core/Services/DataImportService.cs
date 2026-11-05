@@ -1,10 +1,14 @@
 using MICGeoVisionPro.Core.Models;
+using MICGeoVisionPro.Core.Services;
 
 namespace MICGeoVisionPro.Core.Services;
 
-/// <summary>Compatibility wrapper. Use <see cref="CsvImportService.ImportTable"/> for new code.</summary>
+/// <summary>
+/// Legacy compatibility wrapper kept only for older callers.
+/// New code should use CsvImportService.ImportTable.
+/// </summary>
 [Obsolete("Use CsvImportService.ImportTable instead.")]
-public class DataImportService
+public sealed class DataImportService
 {
     private readonly CsvImportService _csvImportService = new();
 
