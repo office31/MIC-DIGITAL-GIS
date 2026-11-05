@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace MICGeoVisionPro.Core.Services
 {
@@ -45,7 +46,44 @@ namespace MICGeoVisionPro.Core.Services
 
         private static string[] SplitCsvLine(string line)
         {
-            return line.Split(',');
+            if (string.IsNullOrEmpty(line))
+            {
+                return Array.Empty<string>();
+            }
+
+            var values = new List<string>();
+            var current = new StringBuilder();
+            var inQuotes = false;
+
+            for (var i = 0; i < line.Length; i++)
+            {
+                var character = line[i];
+
+                if (character == '"')
+                {
+                    if (inQuotes && i + 1 < line.Length && line[i + 1] == '"')
+                    {
+                        current.Append('"');
+                        i++;
+                    }
+                    else
+                    {
+                        inQuotes = !inQuotes;
+                    }
+                }
+                else if (character == ',' && !inQuotes)
+                {
+                    values.Add(current.ToString());
+                    current.Clear();
+                }
+                else
+                {
+                    current.Append(character);
+                }
+            }
+
+            values.Add(current.ToString());
+            return values.ToArray();
         }
     }
 }
