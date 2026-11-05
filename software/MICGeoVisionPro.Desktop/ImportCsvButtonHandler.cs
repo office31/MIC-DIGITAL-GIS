@@ -1,19 +1,13 @@
-using System.Collections.Generic;
+using System;
 using System.IO;
 using System.Windows;
-using System.Windows.Controls;
 using Microsoft.Win32;
 
 namespace MICGeoVisionPro.Desktop
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         private readonly MICGeoVisionPro.Core.Services.CsvImportService _csvImportService = new();
-
-        public MainWindow()
-        {
-            InitializeComponent();
-        }
 
         private void ImportCsvButton_Click(object sender, RoutedEventArgs e)
         {
@@ -23,19 +17,21 @@ namespace MICGeoVisionPro.Desktop
                 Title = "Import CSV Data"
             };
 
-            if (dialog.ShowDialog() == true)
+            if (dialog.ShowDialog() != true)
             {
-                try
-                {
-                    var rows = _csvImportService.Import(dialog.FileName);
-                    var fileContent = string.Join(Environment.NewLine, rows.Count > 0 ? rows.Select(r => string.Join(" | ", r.Values)) : new[] { "No data loaded" });
+                return;
+            }
 
-                    MessageBox.Show($"Imported {rows.Count} rows from {Path.GetFileName(dialog.FileName)}.", "MIC GeoVision Pro");
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message, "Import error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+            try
+            {
+                var rows = _csvImportService.Import(dialog.FileName);
+                MessageBox.Show(
+                    $"Imported {rows.Count} rows from {Path.GetFileName(dialog.FileName)}.",
+                    "MIC GeoVision Pro");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Import error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
