@@ -1,4 +1,6 @@
+using System;
 using System.Windows;
+using MICGeoVisionPro.Desktop.Services;
 using MICGeoVisionPro.Desktop.ViewModels;
 
 namespace MICGeoVisionPro.Desktop
@@ -8,7 +10,7 @@ namespace MICGeoVisionPro.Desktop
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new ProjectViewModel();
+            DataContext = new ProjectViewModel(new CsvFilePicker());
         }
     }
 }

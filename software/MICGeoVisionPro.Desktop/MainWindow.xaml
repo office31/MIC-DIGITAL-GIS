@@ -16,19 +16,17 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Width="28" Height="28" Background="#0ea5e9" CornerRadius="8" VerticalAlignment="Center">
                         <TextBlock Text="MIC" FontWeight="Bold" Foreground="#041821" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="10"/>
                     </Border>
                     <TextBlock Text="MIC GeoVision Pro" Margin="12,0,0,0" FontSize="20" FontWeight="Bold" Foreground="#edf7ff" VerticalAlignment="Center"/>
                 </StackPanel>
-
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Content="New Borehole" Command="{Binding AddBoreholeCommand}" Width="120" Margin="0,0,8,0" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
                     <Button Content="Add Log" Command="{Binding AddLogCommand}" Width="110" Margin="0,0,8,0" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
                     <Button Content="Save" Command="{Binding SaveProjectCommand}" Width="90" Height="30" Margin="0,0,8,0" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
-                    <Button Content="Import CSV" Width="110" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65" Click="ImportCsvButton_Click"/>
+                    <Button Content="Import CSV" Command="{Binding ImportCsvCommand}" Width="110" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
                     <Button Content="Export" Width="90" Height="30" Margin="8,0,0,0" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65" IsEnabled="False"/>
                 </StackPanel>
             </Grid>
@@ -40,16 +38,13 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="300" />
             </Grid.ColumnDefinitions>
-
             <Border Background="#0d1b2a" BorderBrush="#2c4b65" BorderThickness="0,0,1,0">
                 <StackPanel Margin="12,12,10,12">
                     <TextBlock Text="PROJECT" FontSize="11" Foreground="#a8c1d9" FontWeight="Bold" Margin="0,0,0,12"/>
                     <TextBox Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}" Height="30" Margin="0,0,0,18" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"/>
-
                     <TextBlock Text="BOREHOLES" FontSize="11" Foreground="#a8c1d9" FontWeight="Bold" Margin="0,0,0,10"/>
                     <TextBlock Text="{Binding BoreholesCount, StringFormat='Total: {0}'}" Margin="0,0,0,10" Foreground="#edf7ff"/>
                     <ListBox ItemsSource="{Binding Boreholes}" SelectedItem="{Binding SelectedBorehole, Mode=TwoWay}" Height="140" Background="#0e1a29" BorderBrush="#2c4b65" Foreground="#edf7ff" DisplayMemberPath="Name"/>
-
                     <TextBlock Text="LOGS" FontSize="11" Foreground="#a8c1d9" FontWeight="Bold" Margin="18,18,0,10"/>
                     <TextBlock Text="{Binding LogsCount, StringFormat='Logs: {0}'}" Margin="0,0,0,10" Foreground="#edf7ff"/>
                     <ListBox ItemsSource="{Binding Logs}" SelectedItem="{Binding SelectedLog, Mode=TwoWay}" Height="150" Background="#0e1a29" BorderBrush="#2c4b65" Foreground="#edf7ff" DisplayMemberPath="Name"/>
@@ -61,7 +56,6 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-
                 <Border Background="#112230" BorderBrush="#2c4b65" BorderThickness="1" CornerRadius="10" Padding="14">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -79,7 +73,6 @@
                         </StackPanel>
                     </Grid>
                 </Border>
-
                 <Border Grid.Row="1" Margin="0,12,0,0" Background="#0f1d2b" BorderBrush="#2c4b65" BorderThickness="1" CornerRadius="12">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -143,7 +136,7 @@
         </Grid>
 
         <Border Grid.Row="2" Background="#0b1724" BorderBrush="#2c4b65" BorderThickness="0,1,0,0">
-            <TextBlock Text=" Ready  |  Project loaded  |  SQLite active  |  CSV import ready" Foreground="#a8c1d9" VerticalAlignment="Center" Margin="14,0,0,0"/>
+            <TextBlock Text="{Binding StatusMessage}" Foreground="#a8c1d9" VerticalAlignment="Center" Margin="14,0,0,0"/>
         </Border>
     </Grid>
 </Window>

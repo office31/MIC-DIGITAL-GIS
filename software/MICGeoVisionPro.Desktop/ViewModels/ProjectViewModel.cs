@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using MICGeoVisionPro.Core.Models;
 using MICGeoVisionPro.Core.Services;
+using MICGeoVisionPro.Desktop.Services;
 
 namespace MICGeoVisionPro.Desktop.ViewModels
 {
@@ -16,13 +17,17 @@ namespace MICGeoVisionPro.Desktop.ViewModels
         private readonly ProjectRepository _repository;
         private readonly Project _project;
         private readonly CsvImportService _csvImportService = new();
+        private readonly ICsvFilePicker _csvFilePicker;
         private string _projectName;
+        private string _statusMessage = "Ready | Project loaded | SQLite active";
         private Borehole? _selectedBorehole;
         private Log? _selectedLog;
         private DataTable? _selectedImportedTable;
 
-        public ProjectViewModel()
+        public ProjectViewModel(ICsvFilePicker csvFilePicker)
         {
+            _csvFilePicker = csvFilePicker ?? throw new ArgumentNullException(nameof(csvFilePicker));
+
             var dataDirectory = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "MICGeoVisionPro");
@@ -40,6 +45,7 @@ namespace MICGeoVisionPro.Desktop.ViewModels
             AddBoreholeCommand = new RelayCommand(_ => AddNextBorehole());
             AddLogCommand = new RelayCommand(_ => AddNextLithologyLog(), _ => SelectedBorehole is not null);
             SaveProjectCommand = new RelayCommand(_ => Save());
+            ImportCsvCommand = new RelayCommand(_ => ImportCsvFromDialog());
 
             SelectedBorehole = Boreholes.FirstOrDefault();
             SelectedImportedTable = ImportedTables.FirstOrDefault();
@@ -54,6 +60,7 @@ namespace MICGeoVisionPro.Desktop.ViewModels
         public ICommand AddBoreholeCommand { get; }
         public ICommand AddLogCommand { get; }
         public ICommand SaveProjectCommand { get; }
+        public ICommand ImportCsvCommand { get; }
 
         public Borehole? SelectedBorehole
         {
@@ -101,6 +108,17 @@ namespace MICGeoVisionPro.Desktop.ViewModels
                 if (_projectName == value) return;
                 _projectName = value;
                 _project.Name = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string StatusMessage
+        {
+            get => _statusMessage;
+            private set
+            {
+                if (_statusMessage == value) return;
+                _statusMessage = value;
                 OnPropertyChanged();
             }
         }
@@ -177,6 +195,22 @@ namespace MICGeoVisionPro.Desktop.ViewModels
             OnPropertyChanged(nameof(LogsCount));
         }
 
+        private void ImportCsvFromDialog()
+        {
+            var filePath = _csvFilePicker.PickCsvFile();
+            if (string.IsNullOrWhiteSpace(filePath)) return;
+
+            try
+            {
+                var rowCount = ImportCsv(filePath);
+                StatusMessage = $"Imported and saved {rowCount} rows from {Path.GetFileName(filePath)}";
+            }
+            catch (Exception exception)
+            {
+                StatusMessage = $"CSV import failed: {exception.Message}";
+            }
+        }
+
         private void AddNextBorehole()
         {
             var index = Boreholes.Count;
@@ -212,6 +246,7 @@ namespace MICGeoVisionPro.Desktop.ViewModels
         public void Save()
         {
             _repository.SaveProject(_project);
+            StatusMessage = "Project saved locally";
             OnPropertyChanged(nameof(BoreholesCount));
             OnPropertyChanged(nameof(LogsCount));
         }
