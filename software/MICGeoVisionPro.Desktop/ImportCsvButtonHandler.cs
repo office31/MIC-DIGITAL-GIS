@@ -1,12 +1,11 @@
 using System;
 using System.IO;
 using System.Windows;
-using System.Windows.Controls;
 using Microsoft.Win32;
 
 namespace MICGeoVisionPro.Desktop
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         private readonly MICGeoVisionPro.Core.Services.CsvImportService _csvImportService = new();
 
@@ -18,17 +17,21 @@ namespace MICGeoVisionPro.Desktop
                 Title = "Import CSV Data"
             };
 
-            if (dialog.ShowDialog() == true)
+            if (dialog.ShowDialog() != true)
             {
-                try
-                {
-                    var rows = _csvImportService.Import(dialog.FileName);
-                    MessageBox.Show($"Imported {rows.Count} rows from {Path.GetFileName(dialog.FileName)}.", "MIC GeoVision Pro");
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message, "Import error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                return;
+            }
+
+            try
+            {
+                var rows = _csvImportService.Import(dialog.FileName);
+                MessageBox.Show(
+                    $"Imported {rows.Count} rows from {Path.GetFileName(dialog.FileName)}.",
+                    "MIC GeoVision Pro");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Import error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
