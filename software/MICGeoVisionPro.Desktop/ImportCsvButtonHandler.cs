@@ -10,11 +10,6 @@ namespace MICGeoVisionPro.Desktop
     {
         private readonly MICGeoVisionPro.Core.Services.CsvImportService _csvImportService = new();
 
-        public MainWindow()
-        {
-            InitializeComponent();
-        }
-
         private void ImportCsvButton_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog
@@ -28,8 +23,6 @@ namespace MICGeoVisionPro.Desktop
                 try
                 {
                     var rows = _csvImportService.Import(dialog.FileName);
-                    var fileContent = string.Join(Environment.NewLine, rows.Count > 0 ? rows.Select(r => string.Join(" | ", r.Values)) : new[] { "No data loaded" });
-
                     MessageBox.Show($"Imported {rows.Count} rows from {Path.GetFileName(dialog.FileName)}.", "MIC GeoVision Pro");
                 }
                 catch (Exception ex)
