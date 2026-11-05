@@ -7,8 +7,6 @@ namespace MICGeoVisionPro.Desktop
 {
     public partial class MainWindow
     {
-        private readonly MICGeoVisionPro.Core.Services.CsvImportService _csvImportService = new();
-
         private void ImportCsvButton_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog
@@ -24,9 +22,9 @@ namespace MICGeoVisionPro.Desktop
 
             try
             {
-                var rows = _csvImportService.Import(dialog.FileName);
+                var importedRowCount = _viewModel.ImportCsv(dialog.FileName);
                 MessageBox.Show(
-                    $"Imported {rows.Count} rows from {Path.GetFileName(dialog.FileName)}.",
+                    $"Imported and saved {importedRowCount} rows from {Path.GetFileName(dialog.FileName)}.",
                     "MIC GeoVision Pro");
             }
             catch (Exception ex)

@@ -29,6 +29,7 @@ public class Project
     public string? Description { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public List<Borehole> Boreholes { get; set; } = new();
+    public List<DataTable> Tables { get; set; } = new();
 }
 
 public class Borehole

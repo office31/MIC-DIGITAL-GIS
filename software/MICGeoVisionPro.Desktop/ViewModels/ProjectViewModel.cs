@@ -17,6 +17,7 @@ namespace MICGeoVisionPro.Desktop.ViewModels
         private string _projectName;
         private Borehole? _selectedBorehole;
         private Log? _selectedLog;
+        private MICGeoVisionPro.Core.Models.DataTable? _selectedImportedTable;
 
         public ProjectViewModel()
         {
@@ -31,12 +32,17 @@ namespace MICGeoVisionPro.Desktop.ViewModels
 
             Boreholes = new ObservableCollection<Borehole>(_project.Boreholes);
             Logs = new ObservableCollection<Log>();
+            ImportedTables = new ObservableCollection<MICGeoVisionPro.Core.Models.DataTable>(_project.Tables);
+            ImportedRowPreviews = new ObservableCollection<string>();
             SelectedBorehole = Boreholes.FirstOrDefault();
+            SelectedImportedTable = ImportedTables.FirstOrDefault();
             RefreshLogs();
         }
 
         public ObservableCollection<Borehole> Boreholes { get; }
         public ObservableCollection<Log> Logs { get; }
+        public ObservableCollection<MICGeoVisionPro.Core.Models.DataTable> ImportedTables { get; }
+        public ObservableCollection<string> ImportedRowPreviews { get; }
 
         public Borehole? SelectedBorehole
         {
@@ -63,6 +69,18 @@ namespace MICGeoVisionPro.Desktop.ViewModels
             }
         }
 
+        public MICGeoVisionPro.Core.Models.DataTable? SelectedImportedTable
+        {
+            get => _selectedImportedTable;
+            set
+            {
+                if (_selectedImportedTable == value) return;
+                _selectedImportedTable = value;
+                OnPropertyChanged();
+                RefreshImportedRowPreviews();
+            }
+        }
+
         public string ProjectName
         {
             get => _projectName;
@@ -77,7 +95,6 @@ namespace MICGeoVisionPro.Desktop.ViewModels
 
         public string SelectedBoreholeName => SelectedBorehole?.Name ?? "No borehole";
         public string SelectedBoreholeTotalDepth => SelectedBorehole is null ? "0.00 m" : $"{SelectedBorehole.TotalDepth:0.00} m";
-
         public int BoreholesCount => Boreholes.Count;
         public int LogsCount => Logs.Count;
 
@@ -123,6 +140,36 @@ namespace MICGeoVisionPro.Desktop.ViewModels
             Save();
         }
 
+        public int ImportCsv(string filePath)
+        {
+            var importedRows = new CsvImportService().Import(filePath);
+            var table = new MICGeoVisionPro.Core.Models.DataTable
+            {
+                Name = Path.GetFileNameWithoutExtension(filePath)
+            };
+
+            if (importedRows.Count > 0)
+            {
+                foreach (var columnName in importedRows[0].Keys)
+                {
+                    table.Columns.Add(new DataColumn { Name = columnName, Type = DataColumnType.String });
+                }
+
+                foreach (var importedRow in importedRows)
+                {
+                    table.Rows.Add(table.Columns.ToDictionary(
+                        column => column.Name,
+                        column => (object?)(importedRow.TryGetValue(column.Name, out var value) ? value : string.Empty)));
+                }
+            }
+
+            _project.Tables.Add(table);
+            ImportedTables.Add(table);
+            SelectedImportedTable = table;
+            Save();
+            return table.Rows.Count;
+        }
+
         public void RefreshLogs()
         {
             Logs.Clear();
@@ -136,6 +183,18 @@ namespace MICGeoVisionPro.Desktop.ViewModels
 
             SelectedLog = Logs.FirstOrDefault();
             OnPropertyChanged(nameof(LogsCount));
+        }
+
+        private void RefreshImportedRowPreviews()
+        {
+            ImportedRowPreviews.Clear();
+            if (SelectedImportedTable is null) return;
+
+            foreach (var row in SelectedImportedTable.Rows)
+            {
+                ImportedRowPreviews.Add(string.Join("  |  ", SelectedImportedTable.Columns.Select(
+                    column => $"{column.Name}: {row.GetValueOrDefault(column.Name) ?? string.Empty}")));
+            }
         }
 
         public void Save()
