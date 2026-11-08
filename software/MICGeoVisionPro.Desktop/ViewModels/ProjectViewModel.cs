@@ -37,6 +37,8 @@ namespace MICGeoVisionPro.Desktop.ViewModels
 
         private readonly ProjectRepository _repository;
         private readonly Project _project;
+        private readonly string _dataDirectory;
+        private readonly string _databasePath;
         private readonly CsvImportService _csvImportService = new();
         private readonly ICsvFilePicker _csvFilePicker;
         private string _projectName;
@@ -61,7 +63,9 @@ namespace MICGeoVisionPro.Desktop.ViewModels
                 "MICGeoVisionPro");
 
             Directory.CreateDirectory(directory);
-            _repository = new ProjectRepository(Path.Combine(directory, "project.db"));
+            _dataDirectory = directory;
+            _databasePath = Path.Combine(directory, "project.db");
+            _repository = new ProjectRepository(_databasePath);
             _project = _repository.LoadOrCreateDefault();
             _projectName = _project.Name;
 
@@ -208,6 +212,10 @@ namespace MICGeoVisionPro.Desktop.ViewModels
                 MarkModified();
             }
         }
+
+        public string DataDirectory => _dataDirectory;
+
+        public string DatabasePath => _databasePath;
 
         public string BoreholeName
         {
@@ -382,24 +390,24 @@ namespace MICGeoVisionPro.Desktop.ViewModels
             OnPropertyChanged(nameof(LogsCount));
         }
 
-        public void Save()
+        public bool Save()
         {
             if (string.IsNullOrWhiteSpace(ProjectName))
             {
                 StatusMessage = "Project name is required.";
-                return;
+                return false;
             }
 
             if (_project.Boreholes.Any(borehole => string.IsNullOrWhiteSpace(borehole.Name)))
             {
                 StatusMessage = "Every borehole needs a name.";
-                return;
+                return false;
             }
 
             if (!TryApplyIntervals(out var error))
             {
                 StatusMessage = error;
-                return;
+                return false;
             }
 
             _repository.SaveProject(_project);
@@ -407,6 +415,44 @@ namespace MICGeoVisionPro.Desktop.ViewModels
             RefreshBoreholeView();
             OnPropertyChanged(nameof(BoreholesCount));
             OnPropertyChanged(nameof(LogsCount));
+            return true;
+        }
+
+        public bool BackupTo(string destinationPath)
+        {
+            if (!Save())
+            {
+                return false;
+            }
+
+            var target = Path.GetFullPath(destinationPath);
+            if (string.Equals(target, Path.GetFullPath(_databasePath), StringComparison.OrdinalIgnoreCase))
+            {
+                StatusMessage = "Choose a backup file other than the live database.";
+                return false;
+            }
+
+            File.Copy(_databasePath, target, overwrite: true);
+            StatusMessage = $"Backup saved to {Path.GetFileName(target)}";
+            return true;
+        }
+
+        public void RestoreFrom(string backupPath)
+        {
+            var tempPath = _databasePath + ".restoring";
+            try
+            {
+                File.Copy(backupPath, tempPath, overwrite: true);
+                Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+                File.Move(tempPath, _databasePath, overwrite: true);
+            }
+            finally
+            {
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
         }
 
         private void SetCoordinate(double value, Action<Borehole, double> assign)

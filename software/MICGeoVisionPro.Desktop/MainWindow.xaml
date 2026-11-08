@@ -108,6 +108,7 @@
             </Grid.ColumnDefinitions>
 
             <Border Background="#0d1b2a" BorderBrush="#2c4b65" BorderThickness="0,0,1,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel Margin="12,12,10,12">
                     <TextBlock Text="PROJECT" Style="{StaticResource PanelLabel}" Margin="0,0,0,8" />
                     <TextBox Text="{Binding ProjectName}" Style="{StaticResource FieldBox}" Margin="0,0,0,18" />
@@ -129,7 +130,25 @@
                         <Button Content="New" Command="{Binding AddLogCommand}" Style="{StaticResource ToolButton}" Width="70" />
                         <Button Content="Delete" Command="{Binding DeleteLogCommand}" Style="{StaticResource ToolButton}" Width="82" Margin="0" />
                     </StackPanel>
+
+                    <TextBlock Text="STORAGE" Style="{StaticResource PanelLabel}" Margin="0,20,0,6" />
+                    <TextBlock Text="{Binding DataDirectory}" Foreground="#a8c1d9" FontSize="11"
+                               TextTrimming="CharacterEllipsis" ToolTip="{Binding DataDirectory}" />
+                    <TextBlock Text="The project is saved as project.db in this folder." Foreground="#7d99b3"
+                               FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0" />
+                    <Button Content="Open data folder" Click="OpenDataFolder_Click" Style="{StaticResource ToolButton}"
+                            Width="226" HorizontalAlignment="Left" Margin="0,8,0,0" />
+                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                        <Button Content="Backup" Click="BackupProject_Click" Style="{StaticResource ToolButton}" Width="100" />
+                        <Button Content="Restore" Click="RestoreProject_Click" Style="{StaticResource ToolButton}" Width="104" Margin="6,0,0,0" />
+                    </StackPanel>
+                    <TextBlock Text="Back up the file, then upload it to a cloud service to reuse the project on another PC."
+                               Foreground="#7d99b3" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0" />
+                    <TextBlock FontSize="11" TextWrapping="Wrap" Foreground="#7d99b3" Margin="0,6,0,0">
+                        <Hyperlink Click="OpenStorageSite_Click" Tag="https://drive.google.com" Foreground="#38bdf8">Google Drive</Hyperlink><Run Text=" · " /><Hyperlink Click="OpenStorageSite_Click" Tag="https://www.mediafire.com" Foreground="#38bdf8">MediaFire</Hyperlink><Run Text=" · " /><Hyperlink Click="OpenStorageSite_Click" Tag="https://onedrive.live.com" Foreground="#38bdf8">OneDrive</Hyperlink><Run Text=" · " /><Hyperlink Click="OpenStorageSite_Click" Tag="https://www.dropbox.com" Foreground="#38bdf8">Dropbox</Hyperlink>
+                    </TextBlock>
                 </StackPanel>
+                </ScrollViewer>
             </Border>
 
             <Grid Grid.Column="1" Margin="12">

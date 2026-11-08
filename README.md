@@ -25,7 +25,7 @@ Self-contained Windows publish (no .NET installation required on the target mach
 dotnet publish software/MICGeoVisionPro.Desktop/MICGeoVisionPro.Desktop.csproj -p:PublishProfile=win-x64
 ```
 
-The output lands in `software/MICGeoVisionPro.Desktop/bin/Release/net8.0-windows/publish/win-x64/`. See [`software/README.md`](software/README.md) for features, data location, and exports.
+The output lands in `software/MICGeoVisionPro.Desktop/bin/Release/net8.0-windows/publish/win-x64/`. Projects are stored locally in SQLite, and the app can back up or restore the database to any folder or cloud drive. See [`software/README.md`](software/README.md) for features, data location, and exports.
 
 ## Run the API locally
 ```bash

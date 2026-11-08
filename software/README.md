@@ -18,6 +18,7 @@
 - **CSV import** — comma, semicolon, tab, or pipe delimiters; French decimal commas supported; a header row is required.
 - **Export CSV** — one row per lithology interval, semicolon-separated, UTF-8 with BOM, French decimal separators.
 - **Export PNG** — saves the active view as a PNG image.
+- **Project storage** — shows the data folder, opens it in Explorer, and creates or restores `project.db` backups that can be uploaded to Google Drive, MediaFire, OneDrive, or Dropbox.
 - **Persistence** — saves to `%LOCALAPPDATA%\MICGeoVisionPro\project.db`. A sample B-01 borehole is seeded on first run.
 
 ## Run locally

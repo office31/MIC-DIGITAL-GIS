@@ -1,8 +1,12 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
+using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Microsoft.Win32;
+using MICGeoVisionPro.Core.Services;
 using MICGeoVisionPro.Desktop.Services;
 using MICGeoVisionPro.Desktop.ViewModels;
 
@@ -14,6 +18,109 @@ namespace MICGeoVisionPro.Desktop
         {
             InitializeComponent();
             DataContext = new ProjectViewModel(new CsvFilePicker());
+        }
+
+        private void OpenDataFolder_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not ProjectViewModel viewModel) return;
+            OpenExternalTarget(viewModel.DataDirectory);
+        }
+
+        private void OpenStorageSite_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Hyperlink link && link.Tag is string target)
+            {
+                OpenExternalTarget(target);
+            }
+        }
+
+        private void OpenExternalTarget(string target)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo { FileName = target, UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"Unable to open \"{target}\": {ex.Message}", "MIC GeoVision Pro",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void BackupProject_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not ProjectViewModel viewModel) return;
+
+            var dialog = new SaveFileDialog
+            {
+                Title = "Back up project",
+                Filter = "Project backup (*.db)|*.db|All files (*.*)|*.*",
+                DefaultExt = ".db",
+                AddExtension = true,
+                FileName = $"MICGeoVisionPro-backup-{DateTime.Now:yyyyMMdd-HHmm}.db"
+            };
+
+            if (dialog.ShowDialog(this) != true) return;
+
+            try
+            {
+                if (!viewModel.BackupTo(dialog.FileName)) return;
+
+                MessageBox.Show(this,
+                    $"Backup written to:\n{dialog.FileName}\n\nUpload it to Google Drive, MediaFire, OneDrive or Dropbox to keep an off-site copy.",
+                    "MIC GeoVision Pro", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"The backup could not be written: {ex.Message}", "MIC GeoVision Pro",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void RestoreProject_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not ProjectViewModel viewModel) return;
+
+            var dialog = new OpenFileDialog
+            {
+                Title = "Restore project",
+                Filter = "Project backup (*.db)|*.db|All files (*.*)|*.*"
+            };
+
+            if (dialog.ShowDialog(this) != true) return;
+
+            if (!ProjectRepository.IsProjectDatabase(dialog.FileName))
+            {
+                MessageBox.Show(this, "This file is not a MIC GeoVision Pro project database.", "MIC GeoVision Pro",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (string.Equals(Path.GetFullPath(dialog.FileName), Path.GetFullPath(viewModel.DatabasePath),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                MessageBox.Show(this, "This is already the current project database.", "MIC GeoVision Pro",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var confirmation = MessageBox.Show(this,
+                "Replace the current project with this backup? Unsaved changes will be lost.",
+                "MIC GeoVision Pro", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+            if (confirmation != MessageBoxResult.OK) return;
+
+            try
+            {
+                viewModel.RestoreFrom(dialog.FileName);
+                DataContext = new ProjectViewModel(new CsvFilePicker());
+                MessageBox.Show(this, "Project restored from the backup.", "MIC GeoVision Pro",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"The project could not be restored: {ex.Message}", "MIC GeoVision Pro",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void ExportPng_Click(object sender, RoutedEventArgs e)

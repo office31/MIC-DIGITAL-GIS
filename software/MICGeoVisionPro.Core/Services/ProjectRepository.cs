@@ -20,6 +20,24 @@ public class ProjectRepository
         EnsureDatabase();
     }
 
+    public static bool IsProjectDatabase(string databasePath)
+    {
+        try
+        {
+            using var connection = new SqliteConnection($"Data Source={databasePath};Mode=ReadOnly");
+            connection.Open();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT COUNT(*) FROM projects;";
+            command.ExecuteScalar();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     public void SaveProject(Project project)
     {
         var payload = JsonSerializer.Serialize(project, JsonOptions);
