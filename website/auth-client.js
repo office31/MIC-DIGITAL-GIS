@@ -1,14 +1,20 @@
 import { createAuthClient } from "@neon/auth";
 
 const authUrl = import.meta.env.VITE_NEON_AUTH_URL;
+const authBaseUrl = authUrl ? authUrl.replace(/\/+$/, "") : null;
 
-export const authClient = authUrl ? createAuthClient(authUrl) : null;
+export const authClient = authBaseUrl ? createAuthClient(authBaseUrl) : null;
 
 export async function getAuthToken() {
-  if (!authClient) return null;
+  if (!authBaseUrl) return null;
   try {
-    const token = await authClient.getJWTToken?.();
-    return typeof token === "string" && token.length > 0 ? token : null;
+    const response = await fetch(`${authBaseUrl}/token`, {
+      credentials: "include",
+      headers: { accept: "application/json" },
+    });
+    if (!response.ok) return null;
+    const payload = await response.json();
+    return typeof payload?.token === "string" && payload.token.length > 0 ? payload.token : null;
   } catch (error) {
     console.error("Impossible de récupérer le jeton de session Neon Auth :", error);
     return null;
