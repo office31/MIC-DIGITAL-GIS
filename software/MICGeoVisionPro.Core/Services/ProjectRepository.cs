@@ -6,6 +6,12 @@ namespace MICGeoVisionPro.Core.Services;
 
 public class ProjectRepository
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true
+    };
+
     private readonly string _databasePath;
 
     public ProjectRepository(string databasePath)
@@ -16,11 +22,7 @@ public class ProjectRepository
 
     public void SaveProject(Project project)
     {
-        var payload = JsonSerializer.Serialize(project, new JsonSerializerOptions
-        {
-            WriteIndented = false,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+        var payload = JsonSerializer.Serialize(project, JsonOptions);
 
         using var connection = new SqliteConnection($"Data Source={_databasePath}");
         connection.Open();
@@ -76,7 +78,7 @@ public class ProjectRepository
             return new Project { Name = "MIC GIS Demo" };
         }
 
-        return JsonSerializer.Deserialize<Project>(payload)
+        return JsonSerializer.Deserialize<Project>(payload, JsonOptions)
             ?? new Project { Name = "MIC GIS Demo" };
     }
 
@@ -131,10 +133,13 @@ public class ProjectRepository
             if (firstResult is not null)
             {
                 var payload = firstResult.ToString();
-                var loaded = JsonSerializer.Deserialize<Project>(payload);
-                if (loaded is not null)
+                if (!string.IsNullOrWhiteSpace(payload))
                 {
-                    return loaded;
+                    var loaded = JsonSerializer.Deserialize<Project>(payload, JsonOptions);
+                    if (loaded is not null)
+                    {
+                        return loaded;
+                    }
                 }
             }
         }

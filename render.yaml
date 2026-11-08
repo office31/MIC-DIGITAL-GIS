@@ -21,6 +21,8 @@ services:
     envVars:
       - key: VITE_NEON_AUTH_URL
         sync: false
+      - key: VITE_API_BASE_URL
+        value: https://micgis-api.onrender.com
     routes:
       - type: rewrite
         source: /*
