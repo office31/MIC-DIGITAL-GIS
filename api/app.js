@@ -6,6 +6,7 @@ const { createRateLimiter } = require("./rate-limit");
 const { version } = require("./package.json");
 
 const DEFAULT_ALLOWED_ORIGINS = [
+  "https://mic-digital-gis.onrender.com",
   "https://micgis.onrender.com",
   "https://micgis-website.onrender.com",
 ];

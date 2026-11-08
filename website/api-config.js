@@ -1,1 +1,1 @@
-export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "https://micgis-api.onrender.com").replace(/\/+$/, "");
+export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "https://mic-digital-gis-api.onrender.com").replace(/\/+$/, "");

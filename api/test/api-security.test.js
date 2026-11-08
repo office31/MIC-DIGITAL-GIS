@@ -233,17 +233,18 @@ test("allows the Authorization header through CORS preflight", async (t) => {
   const { server, base } = await startApi();
   t.after(() => close(server));
 
+  const origin = "https://mic-digital-gis.onrender.com";
   const response = await fetch(`${base}/api/projects`, {
     method: "OPTIONS",
     headers: {
-      Origin: "https://micgis-website.onrender.com",
+      Origin: origin,
       "Access-Control-Request-Method": "GET",
       "Access-Control-Request-Headers": "authorization",
     },
   });
 
   assert.equal(response.status, 204);
-  assert.equal(response.headers.get("access-control-allow-origin"), "https://micgis-website.onrender.com");
+  assert.equal(response.headers.get("access-control-allow-origin"), origin);
   assert.match(response.headers.get("access-control-allow-headers"), /Authorization/i);
 });
 
