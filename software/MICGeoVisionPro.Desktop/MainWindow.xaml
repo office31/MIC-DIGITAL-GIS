@@ -13,6 +13,27 @@
             <Setter Property="Background" Value="#112230" />
             <Setter Property="Foreground" Value="#edf7ff" />
             <Setter Property="BorderBrush" Value="#2c4b65" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Chrome" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Chrome" Property="Background" Value="#0b1724" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="#1d3549" />
+                                <Setter Property="Foreground" Value="#6f8aa3" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="FieldBox" TargetType="TextBox">
@@ -117,9 +138,10 @@
                             <TextBlock Text="{Binding BoreholeSummary}" Foreground="#a8c1d9" Margin="0,4,0,0"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                            <Button Content="Borehole" Width="90" Height="30" Background="#0ea5e9" Foreground="#041821" Margin="0,0,8,0"/>
-                            <Button Content="Map" Width="70" Height="30" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65" IsEnabled="False"/>
-                            <Button Content="Cross Section" Width="110" Height="30" Margin="8,0,0,0" Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65" IsEnabled="False"/>
+                            <Button Content="Borehole" Width="90" Background="#0ea5e9" Foreground="#041821"
+                                    Style="{StaticResource ToolButton}" Margin="0,0,8,0" />
+                            <Button Content="Map" Width="70" Style="{StaticResource ToolButton}" IsEnabled="False" Margin="0" />
+                            <Button Content="Cross Section" Width="110" Style="{StaticResource ToolButton}" IsEnabled="False" Margin="8,0,0,0" />
                         </StackPanel>
                     </Grid>
                 </Border>
