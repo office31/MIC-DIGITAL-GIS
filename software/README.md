@@ -18,8 +18,18 @@
 - **CSV import** — comma, semicolon, tab, or pipe delimiters; French decimal commas supported; a header row is required.
 - **Export CSV** — one row per lithology interval, semicolon-separated, UTF-8 with BOM, French decimal separators.
 - **Export PNG** — saves the active view as a PNG image.
-- **Project storage** — shows the data folder, opens it in Explorer, and creates or restores `project.db` backups that can be uploaded to Google Drive, MediaFire, OneDrive, or Dropbox.
 - **Persistence** — saves to `%LOCALAPPDATA%\MICGeoVisionPro\project.db`. A sample B-01 borehole is seeded on first run.
+
+## Project storage
+
+The desktop app keeps a single SQLite database and exposes these options in the STORAGE panel:
+
+- **Local folder** — the default location (`%LOCALAPPDATA%\MICGeoVisionPro`); **Open data folder** reveals it in Explorer.
+- **Backup** — saves a copy of `project.db` to any folder, network share, or USB drive.
+- **Restore** — checks that the selected file is a valid project database, replaces the current one, and reloads the project.
+- **Cloud services** — upload the backup file to Google Drive, MediaFire, OneDrive, or Dropbox and download it on another machine. The app opens these sites but does not connect to their APIs; transfers are manual.
+
+A backup contains the complete project, while CSV export contains only lithology intervals. Keep backups out of public shared folders.
 
 ## Run locally
 
