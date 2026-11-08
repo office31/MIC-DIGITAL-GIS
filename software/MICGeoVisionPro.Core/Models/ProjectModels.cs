@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 namespace MICGeoVisionPro.Core.Models;
 
 public enum LogType
@@ -32,15 +34,30 @@ public class Project
     public List<DataTable> Tables { get; set; } = new();
 }
 
-public class Borehole
+public class Borehole : INotifyPropertyChanged
 {
+    private string _name = "Borehole";
+
     public Guid Id { get; set; } = Guid.NewGuid();
-    public string Name { get; set; } = "Borehole";
+
+    public string Name
+    {
+        get => _name;
+        set
+        {
+            if (_name == value) return;
+            _name = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
+        }
+    }
+
     public double X { get; set; }
     public double Y { get; set; }
     public double Elevation { get; set; }
     public double TotalDepth { get; set; }
     public List<Log> Logs { get; set; } = new();
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 }
 
 public class Log
@@ -54,6 +71,7 @@ public class Log
 public class LogPoint
 {
     public double Depth { get; set; }
+    public double EndDepth { get; set; }
     public string Label { get; set; } = string.Empty;
     public double Value { get; set; }
 }

@@ -42,6 +42,7 @@ public class ProjectService
             log.Points.Add(new LogPoint
             {
                 Depth = interval.StartDepth,
+                EndDepth = interval.EndDepth,
                 Label = interval.Lithology,
                 Value = interval.EndDepth - interval.StartDepth
             });
