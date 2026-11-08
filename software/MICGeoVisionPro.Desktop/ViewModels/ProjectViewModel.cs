@@ -6,8 +6,10 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using MICGeoVisionPro.Core.Models;
 using MICGeoVisionPro.Core.Services;
 using MICGeoVisionPro.Desktop.Services;
@@ -18,6 +20,21 @@ namespace MICGeoVisionPro.Desktop.ViewModels
     {
         private const double ViewHeight = 440;
 
+        private const double MapCanvasWidth = 620;
+        private const double MapCanvasHeight = 480;
+        private const double MapPlotLeft = 56;
+        private const double MapPlotTop = 28;
+        private const double MapPlotRight = 24;
+        private const double MapPlotBottom = 48;
+
+        private const double SectionCanvasWidth = 620;
+        private const double SectionCanvasHeight = 440;
+        private const double SectionPlotLeft = 78;
+        private const double SectionPlotTop = 54;
+        private const double SectionPlotRight = 28;
+        private const double SectionPlotBottom = 58;
+        private const double SectionColumnWidth = 34;
+
         private readonly ProjectRepository _repository;
         private readonly Project _project;
         private readonly CsvImportService _csvImportService = new();
@@ -25,6 +42,11 @@ namespace MICGeoVisionPro.Desktop.ViewModels
         private string _projectName;
         private string _statusMessage = "Ready | Project loaded | SQLite active";
         private string _viewMessage = string.Empty;
+        private string _mapMessage = string.Empty;
+        private string _mapRangeLabel = string.Empty;
+        private string _sectionMessage = string.Empty;
+        private PointCollection _sectionSurfacePoints = new();
+        private WorkspaceView _activeView = WorkspaceView.Borehole;
         private Borehole? _selectedBorehole;
         private Log? _selectedLog;
         private LithologyIntervalRow? _selectedInterval;
@@ -48,6 +70,11 @@ namespace MICGeoVisionPro.Desktop.ViewModels
             LithologyIntervals = new ObservableCollection<LithologyIntervalRow>();
             Segments = new ObservableCollection<LithologySegment>();
             DepthTicks = new ObservableCollection<DepthTick>();
+            MapMarkers = new ObservableCollection<MapMarker>();
+            SectionColumns = new ObservableCollection<SectionColumn>();
+            SectionLabels = new ObservableCollection<SectionLabel>();
+            SectionDistanceTicks = new ObservableCollection<SectionTick>();
+            SectionElevationTicks = new ObservableCollection<SectionTick>();
             ImportedTables = new ObservableCollection<DataTable>(_project.Tables);
             ImportedRowPreviews = new ObservableCollection<string>();
 
@@ -59,6 +86,10 @@ namespace MICGeoVisionPro.Desktop.ViewModels
             RemoveIntervalCommand = new RelayCommand(_ => RemoveSelectedInterval(), _ => SelectedInterval is not null);
             SaveProjectCommand = new RelayCommand(_ => Save());
             ImportCsvCommand = new RelayCommand(_ => ImportCsvFromDialog());
+            ExportCsvCommand = new RelayCommand(_ => ExportCsvFromDialog());
+            ShowBoreholeViewCommand = new RelayCommand(_ => SetActiveView(WorkspaceView.Borehole));
+            ShowMapViewCommand = new RelayCommand(_ => SetActiveView(WorkspaceView.Map));
+            ShowCrossSectionViewCommand = new RelayCommand(_ => SetActiveView(WorkspaceView.CrossSection));
 
             SelectedBorehole = Boreholes.FirstOrDefault();
             SelectedImportedTable = ImportedTables.FirstOrDefault();
@@ -70,6 +101,11 @@ namespace MICGeoVisionPro.Desktop.ViewModels
         public ObservableCollection<LithologyIntervalRow> LithologyIntervals { get; }
         public ObservableCollection<LithologySegment> Segments { get; }
         public ObservableCollection<DepthTick> DepthTicks { get; }
+        public ObservableCollection<MapMarker> MapMarkers { get; }
+        public ObservableCollection<SectionColumn> SectionColumns { get; }
+        public ObservableCollection<SectionLabel> SectionLabels { get; }
+        public ObservableCollection<SectionTick> SectionDistanceTicks { get; }
+        public ObservableCollection<SectionTick> SectionElevationTicks { get; }
         public ObservableCollection<DataTable> ImportedTables { get; }
         public ObservableCollection<string> ImportedRowPreviews { get; }
 
@@ -81,6 +117,10 @@ namespace MICGeoVisionPro.Desktop.ViewModels
         public ICommand RemoveIntervalCommand { get; }
         public ICommand SaveProjectCommand { get; }
         public ICommand ImportCsvCommand { get; }
+        public ICommand ExportCsvCommand { get; }
+        public ICommand ShowBoreholeViewCommand { get; }
+        public ICommand ShowMapViewCommand { get; }
+        public ICommand ShowCrossSectionViewCommand { get; }
 
         public Borehole? SelectedBorehole
         {
@@ -181,6 +221,7 @@ namespace MICGeoVisionPro.Desktop.ViewModels
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(BoreholeSummary));
                 MarkModified();
+                RefreshBoreholeView();
             }
         }
 
@@ -221,6 +262,19 @@ namespace MICGeoVisionPro.Desktop.ViewModels
         public bool HasSelectedLog => SelectedLog is not null;
         public bool HasScale => SelectedBorehole is { TotalDepth: > 0 };
 
+        public WorkspaceView ActiveView => _activeView;
+
+        public bool IsBoreholeViewActive => _activeView == WorkspaceView.Borehole;
+        public bool IsMapViewActive => _activeView == WorkspaceView.Map;
+        public bool IsSectionViewActive => _activeView == WorkspaceView.CrossSection;
+
+        public string ActiveViewTitle => _activeView switch
+        {
+            WorkspaceView.Map => "Map View",
+            WorkspaceView.CrossSection => "Cross Section",
+            _ => "Borehole View"
+        };
+
         public string BoreholeSummary => SelectedBorehole is null
             ? "No borehole selected"
             : string.Format(
@@ -249,6 +303,49 @@ namespace MICGeoVisionPro.Desktop.ViewModels
             {
                 if (_viewMessage == value) return;
                 _viewMessage = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string MapMessage
+        {
+            get => _mapMessage;
+            private set
+            {
+                if (_mapMessage == value) return;
+                _mapMessage = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string MapRangeLabel
+        {
+            get => _mapRangeLabel;
+            private set
+            {
+                if (_mapRangeLabel == value) return;
+                _mapRangeLabel = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string SectionMessage
+        {
+            get => _sectionMessage;
+            private set
+            {
+                if (_sectionMessage == value) return;
+                _sectionMessage = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public PointCollection SectionSurfacePoints
+        {
+            get => _sectionSurfacePoints;
+            private set
+            {
+                _sectionSurfacePoints = value;
                 OnPropertyChanged();
             }
         }
@@ -327,6 +424,18 @@ namespace MICGeoVisionPro.Desktop.ViewModels
         private void MarkModified()
         {
             StatusMessage = "Modified — press Save to persist";
+        }
+
+        private void SetActiveView(WorkspaceView view)
+        {
+            if (_activeView == view) return;
+
+            _activeView = view;
+            OnPropertyChanged(nameof(ActiveView));
+            OnPropertyChanged(nameof(IsBoreholeViewActive));
+            OnPropertyChanged(nameof(IsMapViewActive));
+            OnPropertyChanged(nameof(IsSectionViewActive));
+            OnPropertyChanged(nameof(ActiveViewTitle));
         }
 
         private void AddBorehole()
@@ -557,6 +666,9 @@ namespace MICGeoVisionPro.Desktop.ViewModels
 
         private void RefreshBoreholeView()
         {
+            RefreshMapView();
+            RefreshSectionView();
+
             Segments.Clear();
             DepthTicks.Clear();
             OnPropertyChanged(nameof(HasScale));
@@ -637,6 +749,200 @@ namespace MICGeoVisionPro.Desktop.ViewModels
             return steps[^1];
         }
 
+        private void RefreshMapView()
+        {
+            MapMarkers.Clear();
+
+            if (Boreholes.Count == 0)
+            {
+                MapRangeLabel = string.Empty;
+                MapMessage = "No boreholes to display. Create a borehole to populate the map.";
+                return;
+            }
+
+            var dataMinX = Boreholes.Min(borehole => borehole.X);
+            var dataMaxX = Boreholes.Max(borehole => borehole.X);
+            var dataMinY = Boreholes.Min(borehole => borehole.Y);
+            var dataMaxY = Boreholes.Max(borehole => borehole.Y);
+
+            var minX = dataMinX;
+            var maxX = dataMaxX;
+            var minY = dataMinY;
+            var maxY = dataMaxY;
+
+            if (maxX - minX < 1e-9)
+            {
+                minX -= 5;
+                maxX += 5;
+            }
+
+            if (maxY - minY < 1e-9)
+            {
+                minY -= 5;
+                maxY += 5;
+            }
+
+            var plotWidth = MapCanvasWidth - MapPlotLeft - MapPlotRight;
+            var plotHeight = MapCanvasHeight - MapPlotTop - MapPlotBottom;
+            var scale = Math.Min(plotWidth / (maxX - minX), plotHeight / (maxY - minY));
+            var offsetX = MapPlotLeft + (plotWidth - (maxX - minX) * scale) / 2;
+            var offsetY = MapPlotTop + (plotHeight - (maxY - minY) * scale) / 2;
+
+            foreach (var borehole in Boreholes)
+            {
+                var size = borehole == SelectedBorehole ? 14 : 10;
+                var centerX = offsetX + (borehole.X - minX) * scale;
+                var centerY = offsetY + (maxY - borehole.Y) * scale;
+                var toolTip = string.Format(
+                    CultureInfo.CurrentCulture,
+                    "{0}\nX {1:0.##} · Y {2:0.##}\nElevation {3:0.##} m · Depth {4:0.##} m",
+                    borehole.Name,
+                    borehole.X,
+                    borehole.Y,
+                    borehole.Elevation,
+                    borehole.TotalDepth);
+
+                MapMarkers.Add(new MapMarker(
+                    centerX - size / 2,
+                    centerY - size / 2,
+                    size,
+                    borehole.Name,
+                    borehole == SelectedBorehole,
+                    toolTip));
+            }
+
+            MapRangeLabel = string.Format(
+                CultureInfo.CurrentCulture,
+                "X {0:0.##} – {1:0.##} m · Y {2:0.##} – {3:0.##} m",
+                dataMinX,
+                dataMaxX,
+                dataMinY,
+                dataMaxY);
+            MapMessage = Boreholes.Count == 1 ? "Add more boreholes to compare their positions." : string.Empty;
+        }
+
+        private void RefreshSectionView()
+        {
+            SectionColumns.Clear();
+            SectionLabels.Clear();
+            SectionDistanceTicks.Clear();
+            SectionElevationTicks.Clear();
+            SectionSurfacePoints = new PointCollection();
+
+            var boreholes = Boreholes.Where(borehole => borehole.TotalDepth > 0).ToList();
+            if (boreholes.Count < 2)
+            {
+                SectionMessage = "Add at least two boreholes with a total depth to build a cross section.";
+                return;
+            }
+
+            var west = boreholes.OrderBy(borehole => borehole.X).ThenBy(borehole => borehole.Y).First();
+            var east = boreholes.OrderBy(borehole => borehole.X).ThenBy(borehole => borehole.Y).Last();
+            var deltaX = east.X - west.X;
+            var deltaY = east.Y - west.Y;
+            var length = Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
+            var directionX = length > 1e-9 ? deltaX / length : 1;
+            var directionY = length > 1e-9 ? deltaY / length : 0;
+
+            var ordered = boreholes
+                .Select(borehole => new
+                {
+                    Borehole = borehole,
+                    Distance = Math.Max(0, (borehole.X - west.X) * directionX + (borehole.Y - west.Y) * directionY)
+                })
+                .OrderBy(item => item.Distance)
+                .ToList();
+
+            var maxDistance = ordered.Max(item => item.Distance);
+            var plotWidth = SectionCanvasWidth - SectionPlotLeft - SectionPlotRight;
+            var plotHeight = SectionCanvasHeight - SectionPlotTop - SectionPlotBottom;
+            var topElevation = ordered.Max(item => item.Borehole.Elevation);
+            var bottomElevation = ordered.Min(item => item.Borehole.Elevation - item.Borehole.TotalDepth);
+            if (topElevation - bottomElevation < 1e-9)
+            {
+                topElevation = bottomElevation + 1;
+            }
+
+            var verticalScale = plotHeight / (topElevation - bottomElevation);
+            var horizontalScale = maxDistance > 1e-9 ? plotWidth / maxDistance : 0;
+            var points = new PointCollection();
+
+            for (var index = 0; index < ordered.Count; index++)
+            {
+                var item = ordered[index];
+                var borehole = item.Borehole;
+                var x = maxDistance > 1e-9
+                    ? SectionPlotLeft + item.Distance * horizontalScale
+                    : SectionPlotLeft + plotWidth * index / Math.Max(1, ordered.Count - 1);
+                var groundY = SectionPlotTop + (topElevation - borehole.Elevation) * verticalScale;
+                var columnHeight = borehole.TotalDepth * verticalScale;
+
+                points.Add(new Point(x, groundY));
+
+                var layers = new List<SectionLayer>();
+                var log = borehole.Logs.FirstOrDefault(candidate => candidate.Type == LogType.Lithology)
+                    ?? borehole.Logs.FirstOrDefault();
+                if (log is not null)
+                {
+                    foreach (var point in log.Points.OrderBy(candidate => candidate.Depth))
+                    {
+                        var start = Math.Clamp(point.Depth, 0, borehole.TotalDepth);
+                        var end = point.EndDepth > point.Depth ? point.EndDepth : point.Depth + Math.Max(point.Value, 0);
+                        end = Math.Clamp(end, start, borehole.TotalDepth);
+                        if (end - start <= 1e-9) continue;
+
+                        var label = string.IsNullOrWhiteSpace(point.Label) ? "(unnamed)" : point.Label.Trim();
+                        layers.Add(new SectionLayer(
+                            start * verticalScale,
+                            (end - start) * verticalScale,
+                            LithologyPalette.ColorFor(label),
+                            string.Format(CultureInfo.CurrentCulture, "{0}: {1:0.##}–{2:0.##} m", label, start, end)));
+                    }
+                }
+
+                SectionColumns.Add(new SectionColumn(
+                    x - SectionColumnWidth / 2,
+                    SectionColumnWidth,
+                    groundY,
+                    columnHeight,
+                    borehole == SelectedBorehole,
+                    layers));
+                SectionLabels.Add(new SectionLabel(
+                    Math.Clamp(x - 40, 0, SectionCanvasWidth - 80),
+                    Math.Max(2, groundY - 22),
+                    borehole.Name));
+            }
+
+            SectionSurfacePoints = points;
+
+            if (maxDistance > 1e-9)
+            {
+                var distanceStep = NiceStep(maxDistance);
+                for (var distance = 0.0; distance <= maxDistance + 1e-9; distance += distanceStep)
+                {
+                    SectionDistanceTicks.Add(new SectionTick(
+                        SectionPlotLeft + distance * horizontalScale - 35,
+                        SectionPlotTop + plotHeight + 6,
+                        distance.ToString("0.##", CultureInfo.CurrentCulture)));
+                }
+            }
+
+            var elevationStep = NiceStep(topElevation - bottomElevation);
+            var firstElevation = Math.Ceiling(bottomElevation / elevationStep) * elevationStep;
+            for (var elevation = firstElevation; elevation <= topElevation + 1e-9; elevation += elevationStep)
+            {
+                var y = SectionPlotTop + (topElevation - elevation) * verticalScale;
+                SectionElevationTicks.Add(new SectionTick(
+                    SectionPlotLeft - 62,
+                    y - 8,
+                    elevation.ToString("0.##", CultureInfo.CurrentCulture)));
+            }
+
+            SectionMessage = maxDistance > 1e-9
+                ? string.Empty
+                : "All boreholes share the same coordinates: columns are spaced evenly for readability.";
+        }
+
         private void ImportCsvFromDialog()
         {
             var filePath = _csvFilePicker.PickCsvFile();
@@ -651,6 +957,88 @@ namespace MICGeoVisionPro.Desktop.ViewModels
             {
                 StatusMessage = $"CSV import failed: {exception.Message}";
             }
+        }
+
+        private void ExportCsvFromDialog()
+        {
+            var fileName = string.IsNullOrWhiteSpace(ProjectName) ? "MICGeoVision" : ProjectName.Trim();
+            fileName = new string(fileName
+                .Select(character => Path.GetInvalidFileNameChars().Contains(character) ? '_' : character)
+                .ToArray());
+
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "CSV (*.csv)|*.csv",
+                DefaultExt = ".csv",
+                FileName = $"{fileName}.csv"
+            };
+
+            if (dialog.ShowDialog() != true) return;
+
+            try
+            {
+                File.WriteAllText(dialog.FileName, BuildBoreholeCsv(), new UTF8Encoding(true));
+                StatusMessage = $"Exported {Boreholes.Count} borehole(s) to {Path.GetFileName(dialog.FileName)}";
+            }
+            catch (Exception exception)
+            {
+                StatusMessage = $"CSV export failed: {exception.Message}";
+            }
+        }
+
+        private string BuildBoreholeCsv()
+        {
+            var builder = new StringBuilder();
+            builder.AppendLine("Borehole;X;Y;Elevation;TotalDepth;Log;FromDepth;ToDepth;Lithology");
+
+            foreach (var borehole in Boreholes)
+            {
+                var prefix = new[]
+                {
+                    borehole.Name,
+                    CsvNumber(borehole.X),
+                    CsvNumber(borehole.Y),
+                    CsvNumber(borehole.Elevation),
+                    CsvNumber(borehole.TotalDepth)
+                };
+
+                if (borehole.Logs.Count == 0)
+                {
+                    builder.AppendLine(string.Join(";", prefix.Select(CsvField)));
+                    continue;
+                }
+
+                foreach (var log in borehole.Logs)
+                {
+                    if (log.Points.Count == 0)
+                    {
+                        builder.AppendLine(string.Join(";", prefix.Concat([log.Name, string.Empty, string.Empty, string.Empty]).Select(CsvField)));
+                        continue;
+                    }
+
+                    foreach (var point in log.Points)
+                    {
+                        var end = point.EndDepth > point.Depth ? point.EndDepth : point.Depth + point.Value;
+                        var fields = prefix.Concat([log.Name, CsvNumber(point.Depth), CsvNumber(end), point.Label]);
+                        builder.AppendLine(string.Join(";", fields.Select(CsvField)));
+                    }
+                }
+            }
+
+            return builder.ToString();
+        }
+
+        private static string CsvNumber(double value) => value.ToString("0.###", CultureInfo.CurrentCulture);
+
+        private static string CsvField(string? value)
+        {
+            var text = value ?? string.Empty;
+            if (!text.Contains(';') && !text.Contains('"') && !text.Contains('\n') && !text.Contains('\r'))
+            {
+                return text;
+            }
+
+            return "\"" + text.Replace("\"", "\"\"") + "\"";
         }
 
         private void RefreshImportedRowPreviews()

@@ -36,6 +36,16 @@
             </Setter>
         </Style>
 
+        <Style x:Key="ViewTabButton" TargetType="Button" BasedOn="{StaticResource ToolButton}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
+                    <Setter Property="Background" Value="#0ea5e9" />
+                    <Setter Property="Foreground" Value="#041821" />
+                    <Setter Property="BorderBrush" Value="#0ea5e9" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <Style x:Key="FieldBox" TargetType="TextBox">
             <Setter Property="Height" Value="28" />
             <Setter Property="Padding" Value="6,2" />
@@ -83,7 +93,9 @@
                     <Button Content="New Borehole" Command="{Binding AddBoreholeCommand}" Style="{StaticResource ToolButton}" Width="120" />
                     <Button Content="Add Log" Command="{Binding AddLogCommand}" Style="{StaticResource ToolButton}" Width="100" />
                     <Button Content="Save" Command="{Binding SaveProjectCommand}" Style="{StaticResource ToolButton}" Width="90" />
-                    <Button Content="Import CSV" Command="{Binding ImportCsvCommand}" Style="{StaticResource ToolButton}" Width="110" Margin="0" />
+                    <Button Content="Import CSV" Command="{Binding ImportCsvCommand}" Style="{StaticResource ToolButton}" Width="110" />
+                    <Button Content="Export CSV" Command="{Binding ExportCsvCommand}" Style="{StaticResource ToolButton}" Width="100" />
+                    <Button Content="Export PNG" Click="ExportPng_Click" Style="{StaticResource ToolButton}" Width="100" Margin="0" />
                 </StackPanel>
             </Grid>
         </Border>
@@ -134,19 +146,26 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel>
                             <TextBlock Text="CURRENT VIEW" Style="{StaticResource PanelLabel}" />
-                            <TextBlock Text="Borehole View" FontSize="24" FontWeight="Bold" Foreground="#edf7ff" Margin="0,4,0,0"/>
+                            <TextBlock Text="{Binding ActiveViewTitle}" FontSize="24" FontWeight="Bold" Foreground="#edf7ff" Margin="0,4,0,0"/>
                             <TextBlock Text="{Binding BoreholeSummary}" Foreground="#a8c1d9" Margin="0,4,0,0"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                            <Button Content="Borehole" Width="90" Background="#0ea5e9" Foreground="#041821"
-                                    Style="{StaticResource ToolButton}" Margin="0,0,8,0" />
-                            <Button Content="Map" Width="70" Style="{StaticResource ToolButton}" IsEnabled="False" Margin="0" />
-                            <Button Content="Cross Section" Width="110" Style="{StaticResource ToolButton}" IsEnabled="False" Margin="8,0,0,0" />
+                            <Button Content="Borehole" Width="90" Tag="{Binding IsBoreholeViewActive}"
+                                    Command="{Binding ShowBoreholeViewCommand}"
+                                    Style="{StaticResource ViewTabButton}" Margin="0,0,8,0" />
+                            <Button Content="Map" Width="70" Tag="{Binding IsMapViewActive}"
+                                    Command="{Binding ShowMapViewCommand}"
+                                    Style="{StaticResource ViewTabButton}" Margin="0" />
+                            <Button Content="Cross Section" Width="110" Tag="{Binding IsSectionViewActive}"
+                                    Command="{Binding ShowCrossSectionViewCommand}"
+                                    Style="{StaticResource ViewTabButton}" Margin="8,0,0,0" />
                         </StackPanel>
                     </Grid>
                 </Border>
 
-                <Border Grid.Row="1" Margin="0,12,0,0" Background="#0f1d2b" BorderBrush="#2c4b65" BorderThickness="1" CornerRadius="12">
+                <Grid x:Name="ViewHost" Grid.Row="1" Margin="0,12,0,0">
+                <Border Visibility="{Binding IsBoreholeViewActive, Converter={StaticResource BoolToVisibility}}"
+                        Background="#0f1d2b" BorderBrush="#2c4b65" BorderThickness="1" CornerRadius="12">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -232,6 +251,216 @@
                         </ScrollViewer>
                     </Grid>
                 </Border>
+
+                <Border Visibility="{Binding IsMapViewActive, Converter={StaticResource BoolToVisibility}}"
+                        Background="#0f1d2b" BorderBrush="#2c4b65" BorderThickness="1" CornerRadius="12">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Border Background="#122840" BorderBrush="#2c4b65" BorderThickness="0,0,0,1" Padding="12">
+                            <StackPanel>
+                                <TextBlock Text="Plan view — boreholes positioned by X / Y coordinates" Foreground="#a8c1d9" />
+                                <TextBlock Text="{Binding MapRangeLabel}" Foreground="#6f8aa3" FontSize="11" Margin="0,4,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                            <Grid Margin="24,16" HorizontalAlignment="Left" VerticalAlignment="Top">
+                                <Canvas Width="620" Height="480">
+                                    <Rectangle Canvas.Left="56" Canvas.Top="28" Width="540" Height="404"
+                                               Fill="#0b1a27" Stroke="#2c4b65" StrokeThickness="1" />
+                                    <TextBlock Text="Y (m)" Foreground="#a8c1d9" FontSize="11" Canvas.Left="16" Canvas.Top="24" />
+                                    <TextBlock Text="X (m)" Foreground="#a8c1d9" FontSize="11" Canvas.Left="582" Canvas.Top="440" />
+
+                                    <ItemsControl ItemsSource="{Binding MapMarkers}" Canvas.Left="0" Canvas.Top="0"
+                                                  Width="620" Height="480">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <Canvas />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemContainerStyle>
+                                            <Style TargetType="ContentPresenter">
+                                                <Setter Property="Canvas.Left" Value="{Binding Left}" />
+                                                <Setter Property="Canvas.Top" Value="{Binding Top}" />
+                                            </Style>
+                                        </ItemsControl.ItemContainerStyle>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" ToolTip="{Binding ToolTip}">
+                                                    <Ellipse Width="{Binding Size}" Height="{Binding Size}" VerticalAlignment="Center">
+                                                        <Ellipse.Style>
+                                                            <Style TargetType="Ellipse">
+                                                                <Setter Property="Fill" Value="#0ea5e9" />
+                                                                <Setter Property="Stroke" Value="#edf7ff" />
+                                                                <Setter Property="StrokeThickness" Value="1" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                        <Setter Property="Fill" Value="#f59e0b" />
+                                                                        <Setter Property="StrokeThickness" Value="2" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Ellipse.Style>
+                                                    </Ellipse>
+                                                    <TextBlock Text="{Binding Label}" Foreground="#edf7ff" FontSize="11"
+                                                               Margin="6,0,0,0" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <TextBlock Text="{Binding MapMessage}" Foreground="#a8c1d9" FontSize="13"
+                                               Canvas.Left="220" Canvas.Top="220" Width="220" TextWrapping="Wrap" />
+                                </Canvas>
+                            </Grid>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+
+                <Border Visibility="{Binding IsSectionViewActive, Converter={StaticResource BoolToVisibility}}"
+                        Background="#0f1d2b" BorderBrush="#2c4b65" BorderThickness="1" CornerRadius="12">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Border Background="#122840" BorderBrush="#2c4b65" BorderThickness="0,0,0,1" Padding="12">
+                            <StackPanel>
+                                <TextBlock Text="Cross section — lithology columns along the profile, axes in metres" Foreground="#a8c1d9" />
+                                <TextBlock Text="{Binding SectionMessage}" Foreground="#6f8aa3" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                            <Grid Margin="24,16" HorizontalAlignment="Left" VerticalAlignment="Top">
+                                <Canvas Width="620" Height="440">
+                                    <Rectangle Canvas.Left="78" Canvas.Top="54" Width="514" Height="328"
+                                               Fill="#0b1a27" Stroke="#2c4b65" StrokeThickness="1" />
+                                    <Polyline Points="{Binding SectionSurfacePoints}" Stroke="#edf7ff" StrokeThickness="2" />
+                                    <TextBlock Text="Elevation (m)" Foreground="#a8c1d9" FontSize="11" Canvas.Left="4" Canvas.Top="8" />
+
+                                    <ItemsControl ItemsSource="{Binding SectionColumns}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <Canvas />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemContainerStyle>
+                                            <Style TargetType="ContentPresenter">
+                                                <Setter Property="Canvas.Left" Value="{Binding Left}" />
+                                                <Setter Property="Canvas.Top" Value="{Binding Top}" />
+                                            </Style>
+                                        </ItemsControl.ItemContainerStyle>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Width="{Binding Width}" Height="{Binding Height}" Background="#0b1a27">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="BorderBrush" Value="#89a9c9" />
+                                                            <Setter Property="BorderThickness" Value="1" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                    <Setter Property="BorderBrush" Value="#f59e0b" />
+                                                                    <Setter Property="BorderThickness" Value="2" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <ItemsControl ItemsSource="{Binding Layers}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <Canvas />
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemContainerStyle>
+                                                            <Style TargetType="ContentPresenter">
+                                                                <Setter Property="Canvas.Left" Value="0" />
+                                                                <Setter Property="Canvas.Top" Value="{Binding Top}" />
+                                                            </Style>
+                                                        </ItemsControl.ItemContainerStyle>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Rectangle Height="{Binding Height}"
+                                                                           Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Border}}"
+                                                                           Fill="{Binding Fill}" ToolTip="{Binding ToolTip}" />
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <ItemsControl ItemsSource="{Binding SectionLabels}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <Canvas />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemContainerStyle>
+                                            <Style TargetType="ContentPresenter">
+                                                <Setter Property="Canvas.Left" Value="{Binding Left}" />
+                                                <Setter Property="Canvas.Top" Value="{Binding Top}" />
+                                            </Style>
+                                        </ItemsControl.ItemContainerStyle>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Label}" Width="80" TextAlignment="Center"
+                                                           Foreground="#edf7ff" FontSize="11" TextTrimming="CharacterEllipsis" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <ItemsControl ItemsSource="{Binding SectionDistanceTicks}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <Canvas />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemContainerStyle>
+                                            <Style TargetType="ContentPresenter">
+                                                <Setter Property="Canvas.Left" Value="{Binding Left}" />
+                                                <Setter Property="Canvas.Top" Value="{Binding Top}" />
+                                            </Style>
+                                        </ItemsControl.ItemContainerStyle>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Label}" Width="70" TextAlignment="Center"
+                                                           Foreground="#a8c1d9" FontSize="10" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <ItemsControl ItemsSource="{Binding SectionElevationTicks}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <Canvas />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemContainerStyle>
+                                            <Style TargetType="ContentPresenter">
+                                                <Setter Property="Canvas.Left" Value="{Binding Left}" />
+                                                <Setter Property="Canvas.Top" Value="{Binding Top}" />
+                                            </Style>
+                                        </ItemsControl.ItemContainerStyle>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Label}" Width="56" TextAlignment="Right"
+                                                           Foreground="#a8c1d9" FontSize="10" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Canvas>
+                            </Grid>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+                </Grid>
             </Grid>
 
             <Border Grid.Column="2" Background="#0d1b2a" BorderBrush="#2c4b65" BorderThickness="1,0,0,0">
