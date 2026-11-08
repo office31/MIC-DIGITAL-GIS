@@ -32,6 +32,7 @@ The output lands in `software/MICGeoVisionPro.Desktop/bin/Release/net8.0-windows
 - **Website projects** are stored in the Neon database and scoped to the signed-in user.
 - **Desktop projects** are stored in `%LOCALAPPDATA%\MICGeoVisionPro\project.db`; the STORAGE panel shows the folder and opens it in Explorer.
 - **Backup / Restore** writes a copy of the database anywhere (Documents, network share, USB drive) and restores it after validating the file.
+- **Account synchronization** — the CLOUD ACCOUNT panel signs in with the same Neon Auth account as the website. **Upload** stores the complete project document on the account (512 KB limit); **Download** replaces the local project after confirmation. The last write wins, and the session token lives only in memory.
 - **Cloud services** — upload the backup file to Google Drive, MediaFire, OneDrive, or Dropbox and download it on another PC. The app opens these sites but is not connected to their APIs, so transfers remain manual.
 
 ## Run the API locally
@@ -51,6 +52,10 @@ Project routes also require Neon Auth: set `NEON_AUTH_BASE_URL` to the public Ne
 - `GET /api/db/health` (Bearer token required)
 - `GET /api/projects` (Bearer token required, returns only the caller's projects)
 - `POST /api/projects` (Bearer token required) with JSON such as `{"name":"Site A","description":"Optional details"}`
+- `GET /api/projects/:id/document` (Bearer token required, returns the stored project document for its owner)
+- `PUT /api/projects/:id/document` (Bearer token required) with `{"name":"Site A","description":"…","payload":{…}}`; the JSON payload is limited to 512 KB and only the owner can overwrite the row.
+
+The desktop CLOUD ACCOUNT panel uses the same Bearer token as the site: it signs in through Neon Auth, then calls the document routes with the project JSON produced by `ProjectDocument`.
 
 See [`api/README.md`](api/README.md) for Neon setup, authentication and test commands.
 

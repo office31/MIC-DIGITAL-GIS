@@ -61,6 +61,37 @@
             <Setter Property="Foreground" Value="#a8c1d9" />
         </Style>
 
+        <Style x:Key="CloudListItem" TargetType="ListBoxItem">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="#edf7ff" />
+            <Setter Property="Padding" Value="6,3" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Row" Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Row" Property="Background" Value="#122840" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Row" Property="Background" Value="#1d3b55" />
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="True" />
+                                    <Condition Property="IsMouseOver" Value="True" />
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="Row" Property="Background" Value="#24506f" />
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="GridEditingBox" TargetType="TextBox">
             <Setter Property="Background" Value="#112230" />
             <Setter Property="Foreground" Value="#edf7ff" />
@@ -147,6 +178,38 @@
                     <TextBlock FontSize="11" TextWrapping="Wrap" Foreground="#7d99b3" Margin="0,6,0,0">
                         <Hyperlink Click="OpenStorageSite_Click" Tag="https://drive.google.com" Foreground="#38bdf8">Google Drive</Hyperlink><Run Text=" · " /><Hyperlink Click="OpenStorageSite_Click" Tag="https://www.mediafire.com" Foreground="#38bdf8">MediaFire</Hyperlink><Run Text=" · " /><Hyperlink Click="OpenStorageSite_Click" Tag="https://onedrive.live.com" Foreground="#38bdf8">OneDrive</Hyperlink><Run Text=" · " /><Hyperlink Click="OpenStorageSite_Click" Tag="https://www.dropbox.com" Foreground="#38bdf8">Dropbox</Hyperlink>
                     </TextBlock>
+
+                    <TextBlock Text="CLOUD ACCOUNT" Style="{StaticResource PanelLabel}" Margin="0,22,0,6" />
+                    <TextBlock Text="{Binding CloudAccountLabel}" Foreground="#a8c1d9" FontSize="11"
+                               TextWrapping="Wrap" />
+                    <TextBox Text="{Binding CloudEmail, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource FieldBox}" Margin="0,8,0,0"
+                             IsEnabled="{Binding CanSignIn}" ToolTip="Email of your MIC GIS account" />
+                    <PasswordBox x:Name="CloudPasswordBox" Height="28" Padding="6,2" Margin="0,0,0,6"
+                                 Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"
+                                 IsEnabled="{Binding CanSignIn}" ToolTip="Password (never stored)" />
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Sign in" Click="CloudSignIn_Click" Style="{StaticResource ToolButton}"
+                                Width="100" IsEnabled="{Binding CanSignIn}" />
+                        <Button Content="Sign out" Click="CloudSignOut_Click" Style="{StaticResource ToolButton}"
+                                Width="100" Margin="0" IsEnabled="{Binding CanUseCloud}" />
+                    </StackPanel>
+                    <Button Content="Refresh cloud projects" Click="CloudRefresh_Click"
+                            Style="{StaticResource ToolButton}" Width="216" HorizontalAlignment="Left"
+                            Margin="0,6,0,0" IsEnabled="{Binding CanUseCloud}" />
+                    <ListBox ItemsSource="{Binding CloudProjects}"
+                             SelectedItem="{Binding SelectedCloudProject, Mode=TwoWay}"
+                             ItemContainerStyle="{StaticResource CloudListItem}"
+                             DisplayMemberPath="DisplayName" Height="120" Margin="0,8,0,0"
+                             Background="#0e1a29" BorderBrush="#2c4b65" Foreground="#edf7ff" />
+                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                        <Button Content="Upload" Click="CloudUpload_Click" Style="{StaticResource ToolButton}"
+                                Width="100" IsEnabled="{Binding CanUseCloud}" />
+                        <Button Content="Download" Click="CloudDownload_Click" Style="{StaticResource ToolButton}"
+                                Width="100" Margin="0" IsEnabled="{Binding CanUseCloud}" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding CloudStatus}" Foreground="#7d99b3" FontSize="11"
+                               TextWrapping="Wrap" Margin="0,8,0,0" />
                 </StackPanel>
                 </ScrollViewer>
             </Border>

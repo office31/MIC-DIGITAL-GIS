@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Microsoft.Data.Sqlite;
 using MICGeoVisionPro.Core.Models;
 
@@ -6,12 +5,6 @@ namespace MICGeoVisionPro.Core.Services;
 
 public class ProjectRepository
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        PropertyNameCaseInsensitive = true
-    };
-
     private readonly string _databasePath;
 
     public ProjectRepository(string databasePath)
@@ -40,7 +33,7 @@ public class ProjectRepository
 
     public void SaveProject(Project project)
     {
-        var payload = JsonSerializer.Serialize(project, JsonOptions);
+        var payload = ProjectDocument.Serialize(project);
 
         using var connection = new SqliteConnection($"Data Source={_databasePath}");
         connection.Open();
@@ -96,8 +89,22 @@ public class ProjectRepository
             return new Project { Name = "MIC GIS Demo" };
         }
 
-        return JsonSerializer.Deserialize<Project>(payload, JsonOptions)
+        return ProjectDocument.Deserialize(payload)
             ?? new Project { Name = "MIC GIS Demo" };
+    }
+
+    public void ReplaceAll(Project project)
+    {
+        using (var connection = new SqliteConnection($"Data Source={_databasePath}"))
+        {
+            connection.Open();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = "DELETE FROM projects;";
+            command.ExecuteNonQuery();
+        }
+
+        SaveProject(project);
     }
 
     public Project LoadOrCreateDefault()
@@ -153,7 +160,7 @@ public class ProjectRepository
                 var payload = firstResult.ToString();
                 if (!string.IsNullOrWhiteSpace(payload))
                 {
-                    var loaded = JsonSerializer.Deserialize<Project>(payload, JsonOptions);
+                    var loaded = ProjectDocument.Deserialize(payload);
                     if (loaded is not null)
                     {
                         return loaded;

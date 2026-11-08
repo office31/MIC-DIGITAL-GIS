@@ -246,6 +246,112 @@ test("allows the Authorization header through CORS preflight", async (t) => {
   assert.equal(response.status, 204);
   assert.equal(response.headers.get("access-control-allow-origin"), origin);
   assert.match(response.headers.get("access-control-allow-headers"), /Authorization/i);
+  assert.match(response.headers.get("access-control-allow-methods"), /PUT/);
+});
+
+test("serves only the caller's project document", async (t) => {
+  const { server, base, pool } = await startApi();
+  t.after(() => close(server));
+
+  const id = "6f2f0b7c-8b4d-4a52-9f5e-9a1c2d3e4f50";
+  const response = await fetch(`${base}/api/projects/${id}/document`, {
+    headers: authorized(signToken({ sub: "user-a" })),
+  });
+
+  assert.equal(response.status, 200);
+  assert.match(pool.calls[0].sql, /WHERE id = \$1 AND owner_id = \$2/);
+  assert.deepEqual(pool.calls[0].params, [id, "user-a"]);
+});
+
+test("rejects malformed project document ids", async (t) => {
+  const { server, base, pool } = await startApi();
+  t.after(() => close(server));
+
+  const response = await fetch(`${base}/api/projects/not-a-uuid/document`, {
+    headers: authorized(signToken({ sub: "user-a" })),
+  });
+
+  assert.equal(response.status, 400);
+  assert.equal(pool.calls.length, 0);
+});
+
+test("stores the full project document for its owner", async (t) => {
+  const { server, base, pool } = await startApi();
+  t.after(() => close(server));
+
+  const id = "0b5a4c9e-2d37-4f80-9a11-3c6d7e8f9a0b";
+  const payload = { id, name: "Site A", boreholes: [{ name: "B-01", x: 1, y: 2 }] };
+  const response = await fetch(`${base}/api/projects/${id}/document`, {
+    method: "PUT",
+    headers: { ...authorized(signToken({ sub: "user-c" })), "content-type": "application/json" },
+    body: JSON.stringify({ name: "Site A", description: "Synchronisé depuis le poste", payload }),
+  });
+
+  assert.equal(response.status, 200);
+  assert.match(pool.calls[0].sql, /ON CONFLICT \(id\) DO UPDATE/);
+  assert.deepEqual(pool.calls[0].params.slice(1, 4), ["user-c", "Site A", "Synchronisé depuis le poste"]);
+  assert.deepEqual(JSON.parse(pool.calls[0].params[4]), payload);
+});
+
+test("refuses to overwrite a project owned by another user", async (t) => {
+  const pool = { async query() { return { rows: [] }; } };
+  const { server, base } = await startApi({ pool });
+  t.after(() => close(server));
+
+  const id = "7c1d2e3f-4a5b-4c6d-8e9f-0a1b2c3d4e5f";
+  const response = await fetch(`${base}/api/projects/${id}/document`, {
+    method: "PUT",
+    headers: { ...authorized(signToken({ sub: "user-b" })), "content-type": "application/json" },
+    body: JSON.stringify({ name: "Intrusion", payload: { id } }),
+  });
+
+  assert.equal(response.status, 409);
+  assert.equal((await response.json()).error, "Project belongs to another user");
+});
+
+test("rejects non-object project payloads", async (t) => {
+  const { server, base, pool } = await startApi();
+  t.after(() => close(server));
+
+  const id = "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d";
+  const response = await fetch(`${base}/api/projects/${id}/document`, {
+    method: "PUT",
+    headers: { ...authorized(signToken({ sub: "user-a" })), "content-type": "application/json" },
+    body: JSON.stringify({ name: "Bad payload", payload: ["not", "an", "object"] }),
+  });
+
+  assert.equal(response.status, 400);
+  assert.equal(pool.calls.length, 0);
+});
+
+test("rejects project documents larger than the limit", async (t) => {
+  const { server, base, pool } = await startApi();
+  t.after(() => close(server));
+
+  const id = "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e";
+  const response = await fetch(`${base}/api/projects/${id}/document`, {
+    method: "PUT",
+    headers: { ...authorized(signToken({ sub: "user-a" })), "content-type": "application/json" },
+    body: JSON.stringify({ name: "Large", payload: { data: "x".repeat(600 * 1024) } }),
+  });
+
+  assert.equal(response.status, 413);
+  assert.equal(pool.calls.length, 0);
+});
+
+test("requires authentication to write project documents", async (t) => {
+  const { server, base, pool } = await startApi();
+  t.after(() => close(server));
+
+  const id = "3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f";
+  const response = await fetch(`${base}/api/projects/${id}/document`, {
+    method: "PUT",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ name: "Anonymous", payload: { id } }),
+  });
+
+  assert.equal(response.status, 401);
+  assert.equal(pool.calls.length, 0);
 });
 
 test("protects the database health endpoint", async (t) => {
@@ -276,5 +382,5 @@ test("reports auth configuration without exposing secrets", async (t) => {
   const body = await response.json();
   assert.equal(body.authConfigured, true);
   assert.equal(body.databaseConfigured, true);
-  assert.equal(body.version, "1.2.0");
+  assert.equal(body.version, "1.3.0");
 });

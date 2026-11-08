@@ -123,6 +123,61 @@ namespace MICGeoVisionPro.Desktop
             }
         }
 
+        private async void CloudSignIn_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not ProjectViewModel viewModel) return;
+
+            if (string.IsNullOrEmpty(CloudPasswordBox.Password))
+            {
+                MessageBox.Show(this, "Enter the password of your account.", "MIC GeoVision Pro",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var signedIn = await viewModel.SignInAsync(CloudPasswordBox.Password);
+            CloudPasswordBox.Clear();
+
+            if (!signedIn)
+            {
+                MessageBox.Show(this, viewModel.CloudStatus, "MIC GeoVision Pro",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private async void CloudSignOut_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not ProjectViewModel viewModel) return;
+            await viewModel.SignOutAsync();
+        }
+
+        private async void CloudRefresh_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not ProjectViewModel viewModel) return;
+            await viewModel.RefreshCloudProjectsAsync();
+        }
+
+        private async void CloudUpload_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not ProjectViewModel viewModel) return;
+
+            if (await viewModel.UploadCurrentProjectAsync() == CloudActionResult.Failed)
+            {
+                MessageBox.Show(this, viewModel.CloudStatus, "MIC GeoVision Pro",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private async void CloudDownload_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not ProjectViewModel viewModel) return;
+
+            if (await viewModel.DownloadSelectedProjectAsync() == CloudActionResult.Failed)
+            {
+                MessageBox.Show(this, viewModel.CloudStatus, "MIC GeoVision Pro",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
         private void ExportPng_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new Microsoft.Win32.SaveFileDialog

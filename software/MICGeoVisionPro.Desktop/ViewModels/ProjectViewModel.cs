@@ -16,6 +16,13 @@ using MICGeoVisionPro.Desktop.Services;
 
 namespace MICGeoVisionPro.Desktop.ViewModels
 {
+    public enum CloudActionResult
+    {
+        Succeeded,
+        Cancelled,
+        Failed
+    }
+
     public class ProjectViewModel : INotifyPropertyChanged
     {
         private const double ViewHeight = 440;
@@ -36,11 +43,16 @@ namespace MICGeoVisionPro.Desktop.ViewModels
         private const double SectionColumnWidth = 34;
 
         private readonly ProjectRepository _repository;
-        private readonly Project _project;
         private readonly string _dataDirectory;
         private readonly string _databasePath;
         private readonly CsvImportService _csvImportService = new();
         private readonly ICsvFilePicker _csvFilePicker;
+        private readonly CloudSyncService _cloud = new();
+        private Project _project;
+        private CloudProject? _selectedCloudProject;
+        private string _cloudEmail = string.Empty;
+        private string _cloudStatus = "Sign in to link this app to your account.";
+        private bool _cloudBusy;
         private string _projectName;
         private string _statusMessage = "Ready | Project loaded | SQLite active";
         private string _viewMessage = string.Empty;
@@ -81,6 +93,7 @@ namespace MICGeoVisionPro.Desktop.ViewModels
             SectionElevationTicks = new ObservableCollection<SectionTick>();
             ImportedTables = new ObservableCollection<DataTable>(_project.Tables);
             ImportedRowPreviews = new ObservableCollection<string>();
+            CloudProjects = new ObservableCollection<CloudProject>();
 
             AddBoreholeCommand = new RelayCommand(_ => AddBorehole());
             DeleteBoreholeCommand = new RelayCommand(_ => DeleteSelectedBorehole(), _ => SelectedBorehole is not null);
@@ -112,6 +125,7 @@ namespace MICGeoVisionPro.Desktop.ViewModels
         public ObservableCollection<SectionTick> SectionElevationTicks { get; }
         public ObservableCollection<DataTable> ImportedTables { get; }
         public ObservableCollection<string> ImportedRowPreviews { get; }
+        public ObservableCollection<CloudProject> CloudProjects { get; }
 
         public ICommand AddBoreholeCommand { get; }
         public ICommand DeleteBoreholeCommand { get; }
@@ -216,6 +230,49 @@ namespace MICGeoVisionPro.Desktop.ViewModels
         public string DataDirectory => _dataDirectory;
 
         public string DatabasePath => _databasePath;
+
+        public string CloudEmail
+        {
+            get => _cloudEmail;
+            set
+            {
+                if (_cloudEmail == value) return;
+                _cloudEmail = value ?? string.Empty;
+                OnPropertyChanged();
+            }
+        }
+
+        public CloudProject? SelectedCloudProject
+        {
+            get => _selectedCloudProject;
+            set
+            {
+                if (_selectedCloudProject == value) return;
+                _selectedCloudProject = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsCloudSignedIn => _cloud.IsSignedIn;
+        public bool IsCloudSignedOut => !IsCloudSignedIn;
+        public bool IsCloudBusy => _cloudBusy;
+        public bool CanSignIn => IsCloudSignedOut && !IsCloudBusy;
+        public bool CanUseCloud => IsCloudSignedIn && !IsCloudBusy;
+
+        public string CloudAccountLabel => IsCloudSignedIn
+            ? $"Signed in as {_cloud.SignedInEmail ?? "account"}"
+            : "Not signed in. Credentials are never stored on this PC.";
+
+        public string CloudStatus
+        {
+            get => _cloudStatus;
+            private set
+            {
+                if (_cloudStatus == value) return;
+                _cloudStatus = value;
+                OnPropertyChanged();
+            }
+        }
 
         public string BoreholeName
         {
@@ -453,6 +510,285 @@ namespace MICGeoVisionPro.Desktop.ViewModels
                     File.Delete(tempPath);
                 }
             }
+        }
+
+        public async Task<bool> SignInAsync(string password)
+        {
+            if (_cloudBusy) return false;
+
+            SetCloudBusy(true);
+            CloudStatus = "Signing in…";
+            try
+            {
+                await _cloud.SignInAsync(CloudEmail, password);
+                NotifyCloudState();
+                StatusMessage = "Signed in to the cloud account";
+                CloudStatus = $"Signed in as {CloudEmail.Trim()}.";
+
+                try
+                {
+                    await LoadCloudProjectsAsync();
+                }
+                catch (Exception exception)
+                {
+                    CloudStatus = $"Signed in, but the project list could not be loaded: {exception.Message}";
+                }
+
+                return true;
+            }
+            catch (Exception exception)
+            {
+                CloudStatus = exception.Message;
+                return false;
+            }
+            finally
+            {
+                SetCloudBusy(false);
+            }
+        }
+
+        public async Task SignOutAsync()
+        {
+            if (_cloudBusy) return;
+
+            SetCloudBusy(true);
+            try
+            {
+                await _cloud.SignOutAsync();
+                CloudProjects.Clear();
+                SelectedCloudProject = null;
+                NotifyCloudState();
+                CloudStatus = "Signed out. Credentials are never stored on this PC.";
+                StatusMessage = "Signed out of the cloud account";
+            }
+            finally
+            {
+                SetCloudBusy(false);
+            }
+        }
+
+        public async Task RefreshCloudProjectsAsync()
+        {
+            if (_cloudBusy) return;
+            if (!IsCloudSignedIn)
+            {
+                CloudStatus = "Sign in before loading your cloud projects.";
+                return;
+            }
+
+            SetCloudBusy(true);
+            try
+            {
+                await LoadCloudProjectsAsync();
+            }
+            catch (Exception exception)
+            {
+                CloudStatus = exception.Message;
+            }
+            finally
+            {
+                SetCloudBusy(false);
+            }
+        }
+
+        public async Task<CloudActionResult> UploadCurrentProjectAsync()
+        {
+            if (_cloudBusy) return CloudActionResult.Failed;
+            if (!IsCloudSignedIn)
+            {
+                CloudStatus = "Sign in before uploading a project.";
+                return CloudActionResult.Failed;
+            }
+
+            if (!Save())
+            {
+                CloudStatus = StatusMessage;
+                return CloudActionResult.Failed;
+            }
+
+            var documentJson = ProjectDocument.Serialize(_project);
+            var byteCount = Encoding.UTF8.GetByteCount(documentJson);
+            if (byteCount > CloudSyncService.MaxDocumentBytes)
+            {
+                CloudStatus = $"This project is {byteCount / 1024} KB and the account limit is 512 KB. " +
+                              "Remove large imported CSV tables before uploading.";
+                return CloudActionResult.Failed;
+            }
+
+            var cloudId = _project.Id.ToString("D");
+            var existing = CloudProjects.FirstOrDefault(project =>
+                string.Equals(project.Id, cloudId, StringComparison.OrdinalIgnoreCase));
+
+            if (existing is { HasDocument: true })
+            {
+                var answer = MessageBox.Show(
+                    $"Project \"{existing.Name}\" already exists on the account. Replace the stored version?",
+                    "MIC GeoVision Pro",
+                    MessageBoxButton.OKCancel,
+                    MessageBoxImage.Warning);
+
+                if (answer != MessageBoxResult.OK) return CloudActionResult.Cancelled;
+            }
+
+            SetCloudBusy(true);
+            try
+            {
+                await _cloud.UploadProjectDocumentAsync(_project.Id, _project.Name, _project.Description, documentJson);
+                await LoadCloudProjectsAsync();
+                CloudStatus = $"Uploaded \"{_project.Name}\" ({byteCount / 1024} KB).";
+                StatusMessage = "Project uploaded to the cloud account";
+                return CloudActionResult.Succeeded;
+            }
+            catch (Exception exception)
+            {
+                CloudStatus = exception.Message;
+                return CloudActionResult.Failed;
+            }
+            finally
+            {
+                SetCloudBusy(false);
+            }
+        }
+
+        public async Task<CloudActionResult> DownloadSelectedProjectAsync()
+        {
+            if (_cloudBusy) return CloudActionResult.Failed;
+            if (!IsCloudSignedIn)
+            {
+                CloudStatus = "Sign in before downloading a project.";
+                return CloudActionResult.Failed;
+            }
+
+            var selection = SelectedCloudProject;
+            if (selection is null)
+            {
+                CloudStatus = "Select a cloud project first.";
+                return CloudActionResult.Failed;
+            }
+
+            if (!selection.HasDocument)
+            {
+                CloudStatus = "This cloud project has no saved document yet.";
+                return CloudActionResult.Failed;
+            }
+
+            var answer = MessageBox.Show(
+                $"Download \"{selection.Name}\" and replace the local project? Unsaved changes will be lost.",
+                "MIC GeoVision Pro",
+                MessageBoxButton.OKCancel,
+                MessageBoxImage.Warning);
+
+            if (answer != MessageBoxResult.OK) return CloudActionResult.Cancelled;
+
+            SetCloudBusy(true);
+            try
+            {
+                var documentJson = await _cloud.DownloadProjectDocumentAsync(selection.Id);
+                var project = ProjectDocument.Deserialize(documentJson)
+                    ?? throw new CloudSyncException("The cloud document could not be read.");
+
+                if (!Guid.TryParse(selection.Id, out var cloudId))
+                {
+                    throw new CloudSyncException("The cloud project id is not valid.");
+                }
+
+                project.Id = cloudId;
+                _repository.ReplaceAll(project);
+                ApplyProject(project);
+                StatusMessage = "Project downloaded from the cloud account";
+                CloudStatus = $"Downloaded \"{project.Name}\".";
+                return CloudActionResult.Succeeded;
+            }
+            catch (Exception exception)
+            {
+                CloudStatus = exception.Message;
+                return CloudActionResult.Failed;
+            }
+            finally
+            {
+                SetCloudBusy(false);
+            }
+        }
+
+        public void ApplyProject(Project project)
+        {
+            ArgumentNullException.ThrowIfNull(project);
+
+            foreach (var row in LithologyIntervals)
+            {
+                row.PropertyChanged -= OnIntervalRowChanged;
+            }
+
+            _project = project;
+            _projectName = project.Name;
+            OnPropertyChanged(nameof(ProjectName));
+
+            _selectedBorehole = null;
+            _selectedLog = null;
+            _selectedInterval = null;
+            _selectedImportedTable = null;
+
+            Boreholes.Clear();
+            foreach (var borehole in project.Boreholes)
+            {
+                Boreholes.Add(borehole);
+            }
+
+            ImportedTables.Clear();
+            foreach (var table in project.Tables)
+            {
+                ImportedTables.Add(table);
+            }
+
+            LithologyIntervals.Clear();
+            OnPropertyChanged(nameof(SelectedInterval));
+            SelectedImportedTable = ImportedTables.FirstOrDefault();
+
+            RefreshLogs();
+            SelectedBorehole = Boreholes.FirstOrDefault();
+            RefreshBoreholeView();
+
+            OnPropertyChanged(nameof(BoreholesCount));
+            OnPropertyChanged(nameof(LogsCount));
+            RaiseCommandStates();
+        }
+
+        private async Task LoadCloudProjectsAsync()
+        {
+            var projects = await _cloud.GetProjectsAsync();
+
+            CloudProjects.Clear();
+            foreach (var project in projects)
+            {
+                CloudProjects.Add(project);
+            }
+
+            var previousId = SelectedCloudProject?.Id;
+            SelectedCloudProject = previousId is null
+                ? CloudProjects.FirstOrDefault()
+                : CloudProjects.FirstOrDefault(project => project.Id == previousId) ?? CloudProjects.FirstOrDefault();
+
+            CloudStatus = CloudProjects.Count == 0
+                ? "No project is stored on this account yet. Use Upload to create one."
+                : $"{CloudProjects.Count} project(s) stored on this account.";
+        }
+
+        private void NotifyCloudState()
+        {
+            OnPropertyChanged(nameof(IsCloudSignedIn));
+            OnPropertyChanged(nameof(IsCloudSignedOut));
+            OnPropertyChanged(nameof(CloudAccountLabel));
+            OnPropertyChanged(nameof(CanSignIn));
+            OnPropertyChanged(nameof(CanUseCloud));
+        }
+
+        private void SetCloudBusy(bool value)
+        {
+            if (_cloudBusy == value) return;
+            _cloudBusy = value;
+            OnPropertyChanged(nameof(IsCloudBusy));
+            OnPropertyChanged(nameof(CanSignIn));
+            OnPropertyChanged(nameof(CanUseCloud));
         }
 
         private void SetCoordinate(double value, Action<Borehole, double> assign)
