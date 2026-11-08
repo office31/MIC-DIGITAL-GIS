@@ -1,6 +1,16 @@
 import { API_BASE_URL } from "./api-config.js";
+import { getAuthToken } from "./auth-client.js";
 
 function messageFor(error) {
+  if (error.code === "AUTH_REQUIRED") {
+    return "Connectez-vous pour créer et consulter vos projets.";
+  }
+  if (error.status === 401) {
+    return "Votre session a expiré. Reconnectez-vous pour continuer.";
+  }
+  if (error.status === 429) {
+    return "Trop de projets créés récemment. Réessayez dans quelques minutes.";
+  }
   if (error.name === "AbortError") {
     return "L’API met trop de temps à répondre. Elle est peut-être en veille : réessayez dans une minute.";
   }
@@ -8,16 +18,31 @@ function messageFor(error) {
 }
 
 async function request(path, options = {}) {
+  const token = await getAuthToken();
+  if (!token) {
+    const error = new Error("Connectez-vous pour créer et consulter vos projets.");
+    error.code = "AUTH_REQUIRED";
+    throw error;
+  }
+
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), 75_000);
   try {
     const response = await fetch(`${API_BASE_URL}${path}`, {
       ...options,
       signal: controller.signal,
-      headers: { ...(options.body ? { "Content-Type": "application/json" } : {}), ...options.headers },
+      headers: {
+        ...(options.body ? { "Content-Type": "application/json" } : {}),
+        ...options.headers,
+        Authorization: `Bearer ${token}`,
+      },
     });
     const payload = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(payload.error || `L’API a répondu avec le code ${response.status}.`);
+    if (!response.ok) {
+      const error = new Error(payload.error || `L’API a répondu avec le code ${response.status}.`);
+      error.status = response.status;
+      throw error;
+    }
     return payload;
   } finally {
     window.clearTimeout(timeout);
@@ -31,9 +56,9 @@ function createProjectSection() {
   section.innerHTML = `
     <div class="container">
       <div class="section-heading">
-        <span class="eyebrow">Projets partagés</span>
-        <h2>Enregistrez vos projets géospatiaux</h2>
-        <p class="projects-intro">Créez un projet et retrouvez la liste des projets enregistrés dans la base de données.</p>
+        <span class="eyebrow">Espace personnel</span>
+        <h2>Vos projets géospatiaux</h2>
+        <p class="projects-intro">Connectez-vous pour créer et retrouver vos propres projets enregistrés dans la base de données.</p>
       </div>
       <div class="projects-layout">
         <form class="projects-form wrap-panel" id="project-form">
@@ -45,8 +70,8 @@ function createProjectSection() {
           <button class="btn btn-primary" type="submit">Enregistrer le projet</button>
         </form>
         <div class="projects-results">
-          <div class="projects-list-header"><h3>Projets récents</h3><button class="projects-refresh" id="projects-refresh" type="button">Actualiser</button></div>
-          <p class="projects-status" id="projects-status" role="status" aria-live="polite">Connexion à l’API en cours. Au premier accès, le réveil du service peut prendre 30 à 60 secondes…</p>
+          <div class="projects-list-header"><h3>Mes projets récents</h3><button class="projects-refresh" id="projects-refresh" type="button">Actualiser</button></div>
+          <p class="projects-status" id="projects-status" role="status" aria-live="polite">Vérification de votre session…</p>
           <div class="projects-list" id="projects-list"></div>
         </div>
       </div>
@@ -102,6 +127,22 @@ export function initializeProjects() {
   const status = section.querySelector("#projects-status");
   const list = section.querySelector("#projects-list");
   const submitButton = form.querySelector("button[type='submit']");
+  const refreshButton = section.querySelector("#projects-refresh");
+  let signedIn = false;
+
+  function applyAuthState(isSignedIn) {
+    signedIn = Boolean(isSignedIn);
+    submitButton.disabled = !signedIn;
+    refreshButton.disabled = !signedIn;
+    form.querySelectorAll("input, textarea").forEach((control) => { control.disabled = !signedIn; });
+    if (!signedIn) {
+      list.replaceChildren();
+      status.dataset.kind = "info";
+      status.textContent = "Connectez-vous pour créer et consulter vos projets.";
+      return;
+    }
+    loadProjects();
+  }
 
   async function loadProjects() {
     status.dataset.kind = "info";
@@ -116,11 +157,16 @@ export function initializeProjects() {
     } catch (error) {
       status.dataset.kind = "error";
       status.textContent = messageFor(error);
+      if (error.status === 401) {
+        submitButton.disabled = true;
+        form.querySelectorAll("input, textarea").forEach((control) => { control.disabled = true; });
+      }
     }
   }
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (!signedIn) return;
     submitButton.disabled = true;
     status.dataset.kind = "info";
     status.textContent = "Enregistrement du projet… Le premier réveil de l’API peut prendre jusqu’à 60 secondes.";
@@ -145,6 +191,8 @@ export function initializeProjects() {
     }
   });
 
-  section.querySelector("#projects-refresh").addEventListener("click", loadProjects);
-  loadProjects();
+  refreshButton.addEventListener("click", loadProjects);
+  window.addEventListener("mic-auth-changed", (event) => applyAuthState(event.detail?.signedIn));
+  applyAuthState(false);
+  status.textContent = "Vérification de votre session…";
 }

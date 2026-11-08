@@ -11,6 +11,9 @@ services:
         value: production
       - key: DATABASE_URL
         sync: false
+      # Public Neon Auth base URL, also used by the site as VITE_NEON_AUTH_URL.
+      - key: NEON_AUTH_BASE_URL
+        sync: false
 
   - type: web
     name: micgis-website

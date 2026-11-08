@@ -1,4 +1,4 @@
-import { createAuthClient } from "@neon/auth";
+import { authClient, notifyAuthChanged } from "./auth-client.js";
 import { initializeWorldClock } from "./world-clock.js";
 import { initializeProjects } from "./projects.js";
 import "./world-clock.css";
@@ -39,7 +39,6 @@ const signinForm = document.querySelector("#signin-panel");
 const accountView = document.querySelector("#account-view");
 const signupTab = document.querySelector("#signup-tab");
 const signinTab = document.querySelector("#signin-tab");
-let authClient;
 
 function showMessage(message, kind = "info") {
   status.textContent = message;
@@ -67,6 +66,7 @@ function updateSession(result) {
   signupTab.hidden = true;
   signinTab.hidden = true;
   showMessage("Vous êtes connecté. Votre session est active sur cet appareil.", "success");
+  notifyAuthChanged(user);
   return true;
 }
 
@@ -84,22 +84,23 @@ signupTab.addEventListener("click", () => switchMode("signup"));
 signinTab.addEventListener("click", () => switchMode("signin"));
 
 async function initializeAuth() {
-  const authUrl = import.meta.env.VITE_NEON_AUTH_URL;
-  if (!authUrl) {
+  if (!authClient) {
     showMessage("Neon Auth n’est pas encore configuré pour le site. Ajoutez VITE_NEON_AUTH_URL aux variables Render après avoir activé Auth avec la CLI Neon.", "warning");
     signupForm.querySelectorAll("input, button").forEach((control) => { control.disabled = true; });
     signinForm.querySelectorAll("input, button").forEach((control) => { control.disabled = true; });
+    notifyAuthChanged(null);
     return;
   }
 
   try {
-    authClient = createAuthClient(authUrl);
     const result = await authClient.getSession();
     if (!result?.error && !result?.err && updateSession(result)) return;
+    notifyAuthChanged(null);
     switchMode("signup");
   } catch (error) {
     console.error("Neon Auth initialization failed:", error);
     showMessage("Impossible de joindre le service d’authentification. Vérifiez l’URL Neon et les domaines autorisés.", "error");
+    notifyAuthChanged(null);
   }
 }
 
@@ -145,6 +146,7 @@ document.querySelector("#signout-button").addEventListener("click", async () => 
     signupTab.hidden = false;
     signinTab.hidden = false;
     switchMode("signup");
+    notifyAuthChanged(null);
     showMessage("Vous êtes déconnecté.", "success");
   } catch (error) { showMessage(error.message || "La déconnexion a échoué.", "error"); }
 });

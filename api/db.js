@@ -19,11 +19,18 @@ async function initializeDatabase() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS projects (
       id UUID PRIMARY KEY,
+      owner_id TEXT,
       name TEXT NOT NULL,
       description TEXT,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
+
+  // Existing installations predate per-user ownership; rows without an owner stay invisible.
+  await pool.query("ALTER TABLE projects ADD COLUMN IF NOT EXISTS owner_id TEXT");
+  await pool.query(
+    "CREATE INDEX IF NOT EXISTS projects_owner_created_at_idx ON projects (owner_id, created_at DESC)"
+  );
 
   return true;
 }

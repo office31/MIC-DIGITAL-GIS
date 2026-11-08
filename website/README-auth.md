@@ -10,6 +10,16 @@ The static landing page includes email/password signup, sign-in, session restora
 5. In Neon Auth settings, trust the production website origin (for example `https://micgis.onrender.com`) and any development origin used for testing.
 6. Redeploy the Render Static Site. The frontend build injects the public auth URL; no Neon secret is bundled.
 
+## API protection
+The project API also requires a Neon Auth session:
+
+- Add the same public auth URL to the Render `micgis-api` service as `NEON_AUTH_BASE_URL`.
+- `website/auth-client.js` exposes the shared client and `getAuthToken()`, which calls `authClient.getJWTToken()`.
+- `website/projects.js` sends `Authorization: Bearer <JWT>` on every project request. The API verifies the token through the Neon Auth JWKS endpoint and scopes each project to its owner.
+- When the user signs in or out, `script.js` dispatches the `mic-auth-changed` event so the projects section enables or disables itself and reloads the list.
+
+Never expose `NEON_AUTH_BASE_URL` secrets beyond the public auth URL; database URLs and Neon API keys stay out of the frontend.
+
 ## Local development
 ```bash
 cd website
