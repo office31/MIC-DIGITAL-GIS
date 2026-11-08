@@ -1,51 +1,50 @@
-# MIC GeoVision Pro — software MVP
+# MIC GeoVision Pro — software
 
-This folder contains the first software architecture for the MIC GeoVision Pro project.
+.NET 8 solution for the MIC GeoVision Pro desktop application.
 
-## What is included
+## Projects
 
-- .NET 8 solution scaffold
-- Core domain models for projects, boreholes, logs, tables, and layers
-- Project service for creating projects and boreholes
-- Data import service for CSV files
-- Console demo to run the first MVP flow
+- `MICGeoVisionPro.Core/` — domain models (projects, boreholes, lithology logs, imported tables, layers) plus project, repository, and CSV import services.
+- `MICGeoVisionPro.Desktop/` — WPF MVVM application for Windows.
+- `MICGeoVisionPro.ConsoleDemo/` — headless walkthrough of the core workflow.
+- `MICGeoVisionPro.sln` — solution file.
 
-## Structure
+## Desktop features
 
-- `MICGeoVisionPro.sln`
-- `MICGeoVisionPro.Core/` — domain logic and models
-- `MICGeoVisionPro.ConsoleDemo/` — demo app to validate the workflow
+- **Borehole view** — lithology log drawn against a depth axis in metres.
+- **Map view** — boreholes placed by their X/Y coordinates with automatic fit and equal scaling; the selected borehole is highlighted.
+- **Cross Section** — west-to-east profile with lithology columns, a surface line, and distance/elevation axes. Requires at least two boreholes with a total depth greater than zero.
+- **Editing** — project name, borehole name/X/Y/elevation/depth, and lithology intervals (From/To/Lithology) in the LITHOLOGY LAYERS grid.
+- **CSV import** — comma, semicolon, tab, or pipe delimiters; French decimal commas supported; a header row is required.
+- **Export CSV** — one row per lithology interval, semicolon-separated, UTF-8 with BOM, French decimal separators.
+- **Export PNG** — saves the active view as a PNG image.
+- **Persistence** — saves to `%LOCALAPPDATA%\MICGeoVisionPro\project.db`. A sample B-01 borehole is seeded on first run.
 
 ## Run locally
 
 ```bash
 cd software
-
 dotnet restore
+dotnet run --project MICGeoVisionPro.Desktop/MICGeoVisionPro.Desktop.csproj
+```
 
-dotnet build
+Requires the .NET 8 SDK. The console demo is still available:
 
+```bash
 dotnet run --project MICGeoVisionPro.ConsoleDemo/MICGeoVisionPro.ConsoleDemo.csproj
 ```
 
-## MVP workflow model
+## Publish self-contained (win-x64)
 
-1. Create Project
-2. Add Borehole
-3. Add Lithology Log
-4. Import CSV data
-5. Analyse table values and logs
-6. Extend into Map View and Cross Section View later
+```bash
+cd software
+dotnet publish MICGeoVisionPro.Desktop/MICGeoVisionPro.Desktop.csproj -p:PublishProfile=win-x64
+```
 
-## Recommended next development steps
+The profile at `MICGeoVisionPro.Desktop/Properties/PublishProfiles/win-x64.pubxml` targets `win-x64`, bundles the .NET 8 Desktop runtime (`SelfContained=true`), keeps trimming disabled for WPF safety, and enables ReadyToRun. Output: `MICGeoVisionPro.Desktop/bin/Release/net8.0-windows/publish/win-x64/` (about 164 MB). Copy the whole folder to the target machine and run `MICGeoVisionPro.Desktop.exe`; no .NET installation is needed there.
 
-- Add WPF UI shell for Borehole View
-- Add SQLite persistence layer
-- Add Map view with coordinate layers
-- Add Cross Section editor
-- Add export to PDF / image / Excel
-- Add scheme editor for lithology colors
+## Remaining roadmap
 
-## Product vision
-
-MIC GeoVision Pro is intended to become a professional geological and geospatial software similar to the logic behind borehole and log visualization tools.
+- PDF and Excel exports
+- Lithology color scheme editor
+- Windows installer around the self-contained publish

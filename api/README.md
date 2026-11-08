@@ -6,7 +6,7 @@ Express API with Neon PostgreSQL storage and Neon Auth session protection for pr
 1. Create a PostgreSQL project and database in Neon.
 2. In Neon, copy the pooled connection string (the hostname contains `-pooler`).
 3. Keep the Neon-provided `sslmode=require` query parameter in the URL.
-4. In Render, open the `micgis-api` service, then **Environment**, and add `DATABASE_URL` with that connection string. Do not commit the connection string to GitHub.
+4. In Render, open the `mic-digital-gis-api` service, then **Environment**, and add `DATABASE_URL` with that connection string. Do not commit the connection string to GitHub.
 5. Deploy/redeploy the API. On startup, it creates or migrates the `projects` table.
 
 The API can still start without `DATABASE_URL`; database endpoints respond with HTTP 503 until the variable is configured.
@@ -15,8 +15,8 @@ The API can still start without `DATABASE_URL`; database endpoints respond with 
 Project routes require a Neon Auth session:
 
 1. Enable Auth in Neon and copy the public auth base URL (the same value used by the site as `VITE_NEON_AUTH_URL`).
-2. In the Render `micgis-api` service, add `NEON_AUTH_BASE_URL` with that URL. It is public, but keep environment configuration outside Git.
-3. The site calls `authClient.getJWTToken()` and sends `Authorization: Bearer <JWT>` on every project request.
+2. In the Render `mic-digital-gis-api` service, add `NEON_AUTH_BASE_URL` with that URL. It is public, but keep environment configuration outside Git.
+3. The site requests a JWT from `GET {NEON_AUTH_BASE_URL}/token` with the session cookie and sends `Authorization: Bearer <JWT>` on every project request.
 4. The API verifies the JWT signature against `{NEON_AUTH_BASE_URL}/.well-known/jwks.json` (fallback `/api/auth/jwks`), then checks `exp`, `nbf`, `iss` and `aud` against the configured auth origin. Supported algorithms: EdDSA (Ed25519), ES256, RS256. Signing keys are cached for 10 minutes and refreshed when an unknown `kid` appears.
 
 When `NEON_AUTH_BASE_URL` is missing, protected routes respond with HTTP 503 instead of failing open.
