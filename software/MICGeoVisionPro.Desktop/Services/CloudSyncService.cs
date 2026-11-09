@@ -124,7 +124,9 @@ namespace MICGeoVisionPro.Desktop.Services
                 throw new CloudSyncException(BuildErrorMessage(response.StatusCode, text));
             }
 
-            var token = ReadToken(text) ?? await FetchTokenAsync();
+            // The sign-in body carries the opaque session token; the API only accepts the JWT
+            // that /token derives from the session cookie.
+            var token = await FetchTokenAsync() ?? ReadToken(text);
             if (string.IsNullOrWhiteSpace(token))
             {
                 throw new CloudSyncException("Sign-in succeeded but the account server returned no session token.");
@@ -280,7 +282,7 @@ namespace MICGeoVisionPro.Desktop.Services
             if (!response.IsSuccessStatusCode)
             {
                 throw new CloudSyncException(
-                    "The account server did not open a session. Check the email and password.");
+                    "The account server did not confirm the session. Sign in again.");
             }
 
             return ReadToken(text);
