@@ -182,10 +182,12 @@
                     <TextBlock Text="CLOUD ACCOUNT" Style="{StaticResource PanelLabel}" Margin="0,22,0,6" />
                     <TextBlock Text="{Binding CloudAccountLabel}" Foreground="#a8c1d9" FontSize="11"
                                TextWrapping="Wrap" />
+                    <TextBlock Text="Email" Foreground="#edf7ff" Margin="0,10,0,4" />
                     <TextBox Text="{Binding CloudEmail, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{StaticResource FieldBox}" Margin="0,8,0,0"
+                             Style="{StaticResource FieldBox}" Margin="0,0,0,8"
                              IsEnabled="{Binding CanSignIn}" ToolTip="Email of your MIC GIS account" />
-                    <PasswordBox x:Name="CloudPasswordBox" Height="28" Padding="6,2" Margin="0,0,0,6"
+                    <TextBlock Text="Password" Foreground="#edf7ff" Margin="0,0,0,4" />
+                    <PasswordBox x:Name="CloudPasswordBox" Height="28" Padding="6,2" Margin="0,0,0,8"
                                  Background="#112230" Foreground="#edf7ff" BorderBrush="#2c4b65"
                                  IsEnabled="{Binding CanSignIn}" ToolTip="Password (never stored)" />
                     <StackPanel Orientation="Horizontal">
