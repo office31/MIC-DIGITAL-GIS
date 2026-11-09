@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -61,6 +62,11 @@ namespace MICGeoVisionPro.Desktop.Services
             "https://ep-floral-water-beuafuqk.neonauth.c-9.us-east-2.aws.neon.tech/neondb/auth";
 
         public const int MaxDocumentBytes = 512 * 1024;
+
+        public static string FormatDocumentSize(long byteCount) =>
+            byteCount < 1024
+                ? "< 1 KB"
+                : $"{(byteCount / 1024.0).ToString("0.#", CultureInfo.InvariantCulture)} KB";
 
         private const string TrustedOrigin = "https://mic-geovision.onrender.com";
 
@@ -201,7 +207,7 @@ namespace MICGeoVisionPro.Desktop.Services
             if (byteCount > MaxDocumentBytes)
             {
                 throw new CloudSyncException(
-                    $"This project is {byteCount / 1024} KB and the account limit is 512 KB. " +
+                    $"This project is {FormatDocumentSize(byteCount)} and the account limit is 512 KB. " +
                     "Remove large imported CSV tables before uploading.");
             }
 

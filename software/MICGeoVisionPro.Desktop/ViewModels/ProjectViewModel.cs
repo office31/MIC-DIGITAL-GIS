@@ -610,7 +610,8 @@ namespace MICGeoVisionPro.Desktop.ViewModels
             var byteCount = Encoding.UTF8.GetByteCount(documentJson);
             if (byteCount > CloudSyncService.MaxDocumentBytes)
             {
-                CloudStatus = $"This project is {byteCount / 1024} KB and the account limit is 512 KB. " +
+                CloudStatus = $"This project is {CloudSyncService.FormatDocumentSize(byteCount)} " +
+                              "and the account limit is 512 KB. " +
                               "Remove large imported CSV tables before uploading.";
                 return CloudActionResult.Failed;
             }
@@ -635,7 +636,7 @@ namespace MICGeoVisionPro.Desktop.ViewModels
             {
                 await _cloud.UploadProjectDocumentAsync(_project.Id, _project.Name, _project.Description, documentJson);
                 await LoadCloudProjectsAsync();
-                CloudStatus = $"Uploaded \"{_project.Name}\" ({byteCount / 1024} KB).";
+                CloudStatus = $"Uploaded \"{_project.Name}\" ({CloudSyncService.FormatDocumentSize(byteCount)}).";
                 StatusMessage = "Project uploaded to the cloud account";
                 return CloudActionResult.Succeeded;
             }
